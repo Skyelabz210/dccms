@@ -85,6 +85,15 @@ impl PlanetaryDisplacement {
     pub fn carries_any_s_r(&self) -> bool {
         !self.s_r_content.is_empty()
     }
+
+    /// Classify the shadow-bond status of this body's displacement
+    /// against a given anchor prime (B-5 bridge).
+    ///
+    /// Wraps [`crate::shadow_bond::detect`] over `(period, epoch, anchor_prime)`,
+    /// which is the canonical (T_X, T_E, ℓ) triple of vault Decoded.md §Algorithm 4.
+    pub fn shadow_bond(&self, anchor_prime: u64) -> crate::shadow_bond::ShadowBond {
+        crate::shadow_bond::detect(self.period, self.epoch, anchor_prime)
+    }
 }
 
 /// Compute `Δ_X = T_E mod T_X` for a planetary body.
@@ -247,5 +256,117 @@ mod tests {
         // 242 = 2 · 11² → mod 2 = 0, mod 11 = 0, others non-zero.
         assert_eq!(addr[0], 0);  // lane 2
         assert_eq!(addr[4], 0);  // lane 11
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // B-5 shadow_bond method coverage
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn saturn_shadow_bond_is_deep_eleven_squared() {
+        use crate::shadow_bond::ShadowBond;
+        let s = planetary_displacement("Saturn", SATURN_SYNODIC, ECLIPSE_TABLE_DAYS);
+        let bond = s.shadow_bond(11);
+        assert_eq!(bond, ShadowBond::Deep {
+            prime: 11,
+            power: 2,
+            displacement: 242,
+        });
+        assert!(bond.is_deep());
+    }
+
+    #[test]
+    fn mars_venus_jupiter_mercury_no_eleven_bond() {
+        for body in [
+            ("Mars", MARS_SYNODIC),
+            ("Venus", VENUS_SYNODIC),
+            ("Jupiter", JUPITER_SYNODIC),
+            ("Mercury", MERCURY_SYNODIC),
+        ] {
+            let d = planetary_displacement(body.0, body.1, ECLIPSE_TABLE_DAYS);
+            let bond = d.shadow_bond(11);
+            assert!(!bond.is_bond(),
+                "{} should have no shadow bond at 11, got {:?}", body.0, bond);
+        }
+    }
+
+    #[test]
+    fn shadow_bond_view_of_s_r_distribution() {
+        // The shadow-bond perspective is **strictly more selective** than
+        // T10's "S_R distribution" view. A shadow bond at prime ℓ requires
+        // ℓ to be ABSENT from the synodic period itself (Decoded.md
+        // §Algorithm 4 condition i). T10's distribution view counts
+        // carrying-by-displacement-content regardless of in-period status.
+        //
+        // Key distinction surfaced during B-5 execution:
+        //
+        //   - Mars period 780 = 4·3·5·13 contains 5 (and 13). So Mars at
+        //     p=5 returns AnchorInPeriod, not a shadow bond. Mars's S_R
+        //     content of 5 in its displacement is ORDINARY divisibility,
+        //     not a "shadow" phenomenon.
+        //   - Saturn period 378 = 2·3³·7 contains 7. So Saturn at p=7
+        //     returns AnchorInPeriod (despite Δ_S = 242 having no factor
+        //     of 7 anyway, the in-period condition fires first).
+        //   - Venus period 584 = 2³·73 contains neither 5, 7, nor 11.
+        //     Venus at 5 and at 7 produce Standard bonds.
+        //
+        // Net result for S_R coverage via shadow bonds at T_E = 11960:
+        //   prime 5  → Venus only (Standard)
+        //   prime 7  → Venus only (Standard)
+        //   prime 11 → Saturn only (Deep, power 2)
+        //   Mars contributes NO shadow bonds — its S_R content is in-period.
+        //
+        // This is a richer finding than the T10 distribution alone: the
+        // shadow-bond reading shows S_R covered by **Venus + Saturn** only,
+        // a 2-body recovery (whereas T10's distribution counts a 3-body
+        // Mars+Venus+Saturn recovery). Both are valid; they answer
+        // different questions. T10 still passes via
+        // `t10_complete_s_r_distribution_at_t_e` above.
+        use crate::shadow_bond::ShadowBond;
+
+        let saturn = planetary_displacement("Saturn", SATURN_SYNODIC, ECLIPSE_TABLE_DAYS);
+        let venus  = planetary_displacement("Venus",  VENUS_SYNODIC,  ECLIPSE_TABLE_DAYS);
+        let mars   = planetary_displacement("Mars",   MARS_SYNODIC,   ECLIPSE_TABLE_DAYS);
+
+        // Saturn at 11: Deep bond.
+        assert_eq!(saturn.shadow_bond(11),
+            ShadowBond::Deep { prime: 11, power: 2, displacement: 242 });
+        // Saturn at 7: AnchorInPeriod (7 | 378).
+        assert_eq!(saturn.shadow_bond(7), ShadowBond::AnchorInPeriod);
+
+        // Venus at 5 and 7: Standard bonds (5,7 ∤ 584).
+        assert_eq!(venus.shadow_bond(5),
+            ShadowBond::Standard { prime: 5, displacement: 280 });
+        assert_eq!(venus.shadow_bond(7),
+            ShadowBond::Standard { prime: 7, displacement: 280 });
+        // Venus at 11: NoBond.
+        assert!(matches!(venus.shadow_bond(11), ShadowBond::NoBond { .. }));
+
+        // Mars at 5 and 13: AnchorInPeriod (5, 13 | 780).
+        assert_eq!(mars.shadow_bond(5), ShadowBond::AnchorInPeriod);
+        assert_eq!(mars.shadow_bond(13), ShadowBond::AnchorInPeriod);
+        // Mars at 7 and 11: NoBond (7, 11 ∤ 780; 7, 11 ∤ 260).
+        assert!(matches!(mars.shadow_bond(7), ShadowBond::NoBond { .. }));
+        assert!(matches!(mars.shadow_bond(11), ShadowBond::NoBond { .. }));
+
+        // S_R coverage via shadow bonds: Venus + Saturn together.
+        let mut bonded: std::collections::BTreeSet<u64> = Default::default();
+        for body in [&saturn, &venus, &mars] {
+            for &p in &[5u64, 7, 11] {
+                if body.shadow_bond(p).is_bond() {
+                    bonded.insert(p);
+                }
+            }
+        }
+        let covered: Vec<u64> = bonded.into_iter().collect();
+        assert_eq!(covered, vec![5, 7, 11],
+            "S_R fully covered by shadow bonds (Venus carries 5 and 7; Saturn carries 11)");
+
+        // Mars contributes NO bonded primes.
+        let mars_bonded_count = [5u64, 7, 11, 13].iter()
+            .filter(|&&p| mars.shadow_bond(p).is_bond())
+            .count();
+        assert_eq!(mars_bonded_count, 0,
+            "Mars contributes no shadow bonds (its 5- and 13-content is in-period)");
     }
 }

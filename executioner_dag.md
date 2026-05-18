@@ -257,3 +257,131 @@ My initial test wrote it backwards. The implementation was correct; the formula 
 
 ### Milestone
 - **Type vocabulary stable.** `Lane` + `MayaState` + `pisano_period` + `fibonacci_entry_point` + `ramanujan_sum` available as foundation for B-5 and B-6. Two reference engines (Vigesimal, Tzolkin) verify the vocabulary works end-to-end; Tzolkin bridges to existing `dayname.rs` without regression.
+
+---
+
+# v0.8.0 Tier 2 — Phase B-5 (Shadow Bond Detector) — DAG
+
+**Session:** 2026-05-18
+**Skill:** executioner
+**Source:** vault `Decoded.md` §Algorithm 4 (Mars-Venus Shadow Prime Bond)
+**Manifest state at start:** v0.8.0-dev Tier 2 B-7 complete, 479 tests, HEAD d07b2d6
+**Layering note:** module lives in `dresden_codex` (pure-integer); `dccms_atlas` consumes via `PlanetaryDisplacement::shadow_bond` method.
+
+**Adaptation decisions (D-1 through D-6):**
+- D-1: typed `ShadowBond` enum (no stringly-typed returns)
+- D-2: exact `power: u32` reporting (not just "≥ 2")
+- D-3: generic over anchor prime (5, 7, 11, 13 all supported)
+- D-4: `AnchorInPeriod` named state for `ℓ | T_X` case (vault condition i)
+- D-5: `NoDisplacement` named state for `Δ = 0` case (vault condition iii)
+- D-6: `PlanetaryDisplacement::shadow_bond` method bridges to existing sr_distribution type
+
+## Nodes
+
+### NODE-B5-01 — `dresden_codex/src/shadow_bond.rs`
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** S
+- **Inputs:** `RAMANUJAN_S_R`, `MARS_SYNODIC`, `SATURN_SYNODIC`, `VENUS_SYNODIC`, `JUPITER_SYNODIC`, `MERCURY_SYNODIC`, `ECLIPSE_TABLE_DAYS` (existing constants); vault `Decoded.md` §Algorithm 4 spec
+- **Output:** `dresden_codex/src/shadow_bond.rs`
+- **Gate:** `ShadowBond` enum with five variants per D-1/D-4/D-5; `detect(period, epoch, prime)` matches vault Algorithm 4 conditions exactly; `for_displacement(d, prime)` operates on precomputed Δ; exact power reporting via repeated division; ≥ 12 unit tests covering all five variants + T10 cross-check
+- **Float check:** PASS (pure integer)
+- **CRAM check:** A1 PASS; no Garner; no Div operator (only modulo); A8 N/A
+- **Status:** PENDING
+
+### NODE-B5-02 — wire shadow_bond into `dresden_codex/lib.rs`
+- **Type:** WIRE
+- **Size:** XS
+- **Inputs:** B5-01
+- **Output:** `dresden_codex/src/lib.rs` edited (one `pub mod`)
+- **Gate:** cargo build clean; module accessible as `dresden_codex::shadow_bond::*`
+- **Status:** PENDING — depends on B5-01
+
+### NODE-B5-03 — `PlanetaryDisplacement::shadow_bond` method on sr_distribution type
+- **Type:** IMPL
+- **Size:** XS
+- **Inputs:** B5-01 (uses `ShadowBond::detect` / `for_displacement`), existing `PlanetaryDisplacement` struct
+- **Output:** `dresden_codex/src/sr_distribution.rs` edited (method + ≥ 3 tests)
+- **Gate:** Saturn.shadow_bond(11) returns `Deep { 11, 2, 242 }`; Mars / Venus / Jupiter / Mercury at p=11 each return `NoBond`; T10 alignment table reproducible
+- **Status:** PENDING — depends on B5-01, B5-02
+
+### NODE-B5-04 — engines-layer consumption smoke test (no new code, just a test demonstrating the vocabulary fits)
+- **Type:** TEST
+- **Size:** XS
+- **Inputs:** B5-01, existing `dccms_atlas::engines::MayaState`
+- **Output:** test file (could be inline in an existing engines test mod)
+- **Gate:** test demonstrates `ShadowBond` integrates cleanly with `MayaState::from_cram_address(cram_address(displacement))` for downstream analysis
+- **Status:** PENDING — depends on B5-01, B5-02, B5-03
+
+## Build order
+
+```
+B5-01 (shadow_bond.rs)
+   ↓
+B5-02 (wire) ─── B5-03 (PlanetaryDisplacement method)
+                              ↓
+                       B5-04 (engines consumption smoke test)
+```
+
+
+## Execution results — B-5
+
+| Node | Output | LOC | Tests | A1 | Gate |
+|---|---|---:|---:|---|---|
+| B5-01 | `dresden_codex/shadow_bond.rs` | 308 | 13 | PASS | PASS |
+| B5-02 | `dresden_codex/lib.rs` (wire) | +1 | — | N/A | PASS |
+| B5-03 | `sr_distribution.rs` (method + tests) | +83 | 3 | PASS | PASS |
+| B5-04 | `engines/mod.rs` (consumption smoke) | +56 | 2 | PASS | PASS |
+
+**Workspace test count:** 479 → 497 (+18). 0 failing.
+**G2 float-check:** 0 new floats; 3 pre-existing doc-comment mentions from B-7 (all intentional discipline notes).
+
+## Predicate-drift catch during B-5 execution (third in v0.8.0)
+
+The integration gate failed on `shadow_bond_view_of_s_r_distribution`. Investigation surfaced a real semantic distinction that was hiding under the T10 framing:
+
+**T10 "S_R distribution" view** (carrying-via-S_R-content):
+- Mars (Δ=260) carries 5  ✓
+- Venus (Δ=280) carries 5, 7  ✓
+- Saturn (Δ=242) carries 11²  ✓
+- 3-body recovery of S_R.
+
+**Decoded.md §Algorithm 4 "shadow bond" view** (carrying-via-shadow-bond):
+- Shadow bond requires ℓ ∤ T_X (condition i) — the prime must be ABSENT from the synodic period itself.
+- Mars at p=5: period 780 contains 5, so `AnchorInPeriod`. **Not a shadow bond.**
+- Saturn at p=7: period 378 contains 7, so `AnchorInPeriod`. **Not a shadow bond.**
+- Venus at p=5 and p=7: 584 = 2³·73 contains neither. Standard bonds at both.
+- Saturn at p=11: Deep bond (the headline case).
+- **2-body recovery** via shadow bonds (Venus + Saturn only); Mars contributes nothing.
+
+Both views are valid; they answer different questions. The shadow-bond view is **strictly more selective** because of condition (i). My initial test conflated the two. Caught at the gate, distinction documented in the test prose, both T10 tests now coexist:
+- `t10_complete_s_r_distribution_at_t_e` — T10 distribution view, **passes** (vault claim)
+- `shadow_bond_view_of_s_r_distribution` — shadow-bond view, **passes** (richer refinement)
+
+This is the third predicate-drift catch in the v0.8.0 line. Each one is a real semantic distinction that surfaced because the test discipline forced it.
+
+## CHECKPOINT — 2026-05-18 (B-5 COMPLETE)
+
+### Completed this session
+| NODE | Status | Output |
+|---|---|---|
+| B5-01..B5-04 | PASS | `shadow_bond.rs` + sr_distribution method + engines smoke test |
+
+### Pending (Tier 2 remainder)
+- B-6: `prime_hunt::ramanujan_partition` boundary (depends on B-5's shadow_bond)
+
+### Pending (B-7 deferred phases)
+- B-7.3..B-7.6: LongCount, DresdenEclipse, VenusTable, MayaFabric engines
+
+### Pending (Tier 3)
+- B-8 DKAM tier mapping
+- B-9 page_arithmetic
+- B-10 Maya-date API
+- B-11 Gini stratification verification
+
+### Milestone
+- **Shadow predicates stabilized.** The 11/11² Saturn case is now one
+  parameterized instance of a reusable `ShadowBond` predicate. Exact
+  power reporting (not just "≥ 2"). The shadow-bond view as a strict
+  refinement of T10 S_R distribution is documented in code. B-6 can now
+  consume this vocabulary to formalize the `{5, 7, 11}` coverage / exclusion
+  structure cleanly.

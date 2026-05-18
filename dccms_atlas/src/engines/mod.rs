@@ -66,3 +66,64 @@ pub use pisano::{
 pub use ramanujan::{euler_totient, mobius, ramanujan_sum};
 pub use vigesimal::{Vigesimal, VigesimalError};
 pub use tzolkin::{Tzolkin, TzolkinError};
+
+#[cfg(test)]
+mod shadow_bond_consumption {
+    //! B-5 vocabulary-consumption smoke test (NODE-B5-04).
+    //!
+    //! Demonstrates that the engines layer cleanly consumes
+    //! `dresden_codex::shadow_bond::ShadowBond` for downstream analysis
+    //! over `MayaState` — without inverting crate dependencies.
+    //! `dresden_codex` produces the typed bond; `dccms_atlas::engines`
+    //! lifts the displacement into a heterogeneous-fabric state.
+
+    use super::MayaState;
+    use dresden_codex::shadow_bond::{self, ShadowBond};
+    use dresden_codex::{cram_address, ECLIPSE_TABLE_DAYS, SATURN_SYNODIC};
+
+    #[test]
+    fn saturn_deep_bond_displacement_lifts_to_maya_state() {
+        let bond = shadow_bond::detect(SATURN_SYNODIC, ECLIPSE_TABLE_DAYS, 11);
+        // Headline case: Δ_S = 242 = 2·11², Deep bond.
+        match bond {
+            ShadowBond::Deep { prime, power, displacement } => {
+                assert_eq!(prime, 11);
+                assert_eq!(power, 2);
+                assert_eq!(displacement, 242);
+
+                // Lift the displacement into a Safe-Basis MayaState for
+                // downstream analysis (which lanes nullify, etc.).
+                let state = MayaState::from_cram_address(cram_address(displacement));
+                assert_eq!(state.lane_count(), 6);
+                // 242 = 2·11² → lane 2 (idx 0) and lane 11 (idx 4) nullify.
+                assert_eq!(state.residues()[0], 0);  // 242 mod 2 = 0
+                assert_eq!(state.residues()[4], 0);  // 242 mod 11 = 0
+                // Other lanes are non-zero:
+                assert_ne!(state.residues()[1], 0);  // mod 3
+                assert_ne!(state.residues()[2], 0);  // mod 5
+                assert_ne!(state.residues()[3], 0);  // mod 7
+                assert_ne!(state.residues()[5], 0);  // mod 13
+                // Alignment count: exactly 2 lanes at origin (2 and 11).
+                assert_eq!(state.alignment_count(), 2);
+            }
+            other => panic!("expected Deep bond, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn nobond_displacement_still_lifts_cleanly() {
+        // Mars: NoBond at p=11 with displacement 260.
+        let bond = shadow_bond::detect(
+            dresden_codex::MARS_SYNODIC,
+            ECLIPSE_TABLE_DAYS,
+            11,
+        );
+        // 260 mod 11 = 7 → NoBond.
+        let displacement = bond.displacement().expect("NoBond carries displacement");
+        let state = MayaState::from_cram_address(cram_address(displacement));
+        // Lane 11 (idx 4) is non-zero — that's why there's no bond.
+        assert_ne!(state.residues()[4], 0);
+        // But Mars displacement 260 = 4·5·13 → lanes {2, 5, 13} nullify.
+        assert_eq!(state.alignment_count(), 3);
+    }
+}
