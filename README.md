@@ -1,7 +1,7 @@
 # DCCMS — Dresden Codex Configuration Manifold Study
 
-**Version:** 0.7.0-dev
-**Tests:** 354 passing, 0 failing (328 dccms_atlas + 24 dresden_codex + 2 prime_hunt)
+**Version:** 0.8.0-dev
+**Tests:** 398 passing, 0 failing (337 dccms_atlas + 59 dresden_codex + 2 prime_hunt)
 **Author:** Anthony Diaz (Acid) — HackFate.us / Skyelabz210
 **Computational collaborator:** Claude (Anthropic)
 

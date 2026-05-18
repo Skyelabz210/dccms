@@ -117,6 +117,9 @@ pub mod substrate_roles;
 // ── v0.7.0-dev — H4 visual transducer (in progress, see executioner_dag.md)
 pub mod h4_visual;
 
+// ── v0.8.0-dev — codex topology (11 sections, pages 1-74)
+pub mod codex_topology;
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════
@@ -177,7 +180,7 @@ pub const H4_INSTRUMENT_COUNT: usize = 6;
 // Project version
 // ═══════════════════════════════════════════════════════════════════
 
-pub const DCCMS_VERSION: &str = "0.7.0-dev";
+pub const DCCMS_VERSION: &str = "0.8.0-dev";
 pub const DCCMS_DECLARATION_DATE: &str = "2026-05-16";
 
 #[cfg(test)]

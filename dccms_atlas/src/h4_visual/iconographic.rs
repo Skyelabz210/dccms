@@ -3,6 +3,18 @@
 //! This alphabet gives one typed figure to each Dresden Codex Goddess-section
 //! page, pages 16 through 24. The values are discrete glyph identities; pixel
 //! extraction and layout sequencing remain separate transducer layers.
+//!
+//! ## Page 24 and the BlankBridge variant
+//!
+//! Per vault `Dresden Coprime.md` line 39, **page 24 contains no painted
+//! iconography whatsoever — it is "a deliberate blank space [that] acts as
+//! a physical and mathematical bridge"** between the Moon Goddess section
+//! (pages 16-23) and the New Year ceremonies section (pages 25-28). The
+//! `BlankBridge` variant of this alphabet represents that structural-blank
+//! page. It carries `SemanticRole::Boundary` because a blank-bridge IS a
+//! region demarcation in the codex's structural language. Its
+//! `associated_interval` is 148 (the near eclipse half-year), maintaining
+//! the 1448-day Goddess-section total without altering the H4 closure.
 
 #![allow(dead_code)]
 
@@ -27,8 +39,11 @@ pub enum IconographicFigure {
     HealingGlyph,
     /// Page 23: flood / overflow.
     FloodGlyph,
-    /// Page 24: rain / fertility.
-    RainGlyph,
+    /// Page 24: structural blank — no painted iconography. The deliberate
+    /// blank space that closes the Moon Goddess section as a physical
+    /// and mathematical bridge to pages 25-28 (New Year ceremonies).
+    /// Carries `SemanticRole::Boundary`.
+    BlankBridge,
 }
 
 /// All Goddess-section figures in codex page order, pages 16-24.
@@ -41,7 +56,7 @@ pub const ALL_FIGURES: [IconographicFigure; 9] = [
     IconographicFigure::BirthGlyph,
     IconographicFigure::HealingGlyph,
     IconographicFigure::FloodGlyph,
-    IconographicFigure::RainGlyph,
+    IconographicFigure::BlankBridge,
 ];
 
 /// Map a Dresden Codex page number to its Goddess-section figure.
@@ -55,7 +70,7 @@ pub fn from_page(page: u8) -> Option<IconographicFigure> {
         21 => Some(IconographicFigure::BirthGlyph),
         22 => Some(IconographicFigure::HealingGlyph),
         23 => Some(IconographicFigure::FloodGlyph),
-        24 => Some(IconographicFigure::RainGlyph),
+        24 => Some(IconographicFigure::BlankBridge),
         _ => None,
     }
 }
@@ -72,14 +87,20 @@ impl IconographicFigure {
             IconographicFigure::BirthGlyph => 5,
             IconographicFigure::HealingGlyph => 6,
             IconographicFigure::FloodGlyph => 7,
-            IconographicFigure::RainGlyph => 8,
+            IconographicFigure::BlankBridge => 8,
         }
     }
 
     /// Semantic role of this figure in the visual transducer.
+    ///
+    /// `EclipseGlyph` and `BlankBridge` carry `Boundary`. The eclipse mark
+    /// demarcates the 148/177 half-year alternation; the blank bridge
+    /// demarcates the Goddess-section closure (page 24). All other
+    /// figures carry `Content`.
     pub fn semantic_role(&self) -> SemanticRole {
         match self {
-            IconographicFigure::EclipseGlyph => SemanticRole::Boundary,
+            IconographicFigure::EclipseGlyph
+            | IconographicFigure::BlankBridge => SemanticRole::Boundary,
             _ => SemanticRole::Content,
         }
     }
@@ -95,12 +116,16 @@ impl IconographicFigure {
     /// of 148 days; odd ordinals 1, 3, 5, 7 are associated with the far
     /// interval of 177 days.
     pub fn associated_interval(&self) -> u64 {
+        // BlankBridge (page 24, ordinal 8, even) keeps the near-eclipse 148
+        // value to preserve the canonical 1448-day total. The interpretation
+        // is that the structural-blank page closes a 148-day near-eclipse
+        // window into the next section.
         match self {
             IconographicFigure::MoonSign
             | IconographicFigure::WeavingShuttle
             | IconographicFigure::EclipseGlyph
             | IconographicFigure::HealingGlyph
-            | IconographicFigure::RainGlyph => 148,
+            | IconographicFigure::BlankBridge => 148,
             IconographicFigure::WaterPot
             | IconographicFigure::SnakeHeaddress
             | IconographicFigure::BirthGlyph
@@ -167,17 +192,38 @@ mod tests {
     }
 
     #[test]
-    fn eclipse_is_boundary() {
+    fn boundary_figures_are_eclipse_and_blankbridge() {
+        // EclipseGlyph and BlankBridge are the only Boundary figures.
         assert_eq!(
             IconographicFigure::EclipseGlyph.semantic_role(),
             SemanticRole::Boundary
         );
-
+        assert_eq!(
+            IconographicFigure::BlankBridge.semantic_role(),
+            SemanticRole::Boundary
+        );
+        // All other figures are Content.
         for figure in ALL_FIGURES {
-            if figure != IconographicFigure::EclipseGlyph {
+            let is_boundary_figure = matches!(
+                figure,
+                IconographicFigure::EclipseGlyph | IconographicFigure::BlankBridge
+            );
+            if !is_boundary_figure {
                 assert_eq!(figure.semantic_role(), SemanticRole::Content);
             }
         }
+    }
+
+    #[test]
+    fn page_24_is_blank_bridge() {
+        // Vault Dresden Coprime line 39: page 24 is iconographically blank.
+        // Our alphabet honors this by representing page 24 as BlankBridge
+        // rather than a painted figure.
+        assert_eq!(from_page(24), Some(IconographicFigure::BlankBridge));
+        assert_eq!(
+            IconographicFigure::BlankBridge.semantic_role(),
+            SemanticRole::Boundary
+        );
     }
 
     #[test]

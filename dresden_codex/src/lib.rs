@@ -163,6 +163,110 @@ pub const SHADOW_ANCHOR_SET: [u64; 4] = [SHADOW_ANCHOR_11_POW_6, 13, 17, 19];
 /// is unaffected; only the published numeric label was wrong.
 pub const SHADOW_ANCHOR_PRODUCT: u64 = 7_438_784_639;
 
+// ─────────────────────────────────────────────────────────────────────
+// Extended planetary periods (per vault `The Dresden Codex.md` §A6, §C3,
+// and synthesis report §3.3, §7)
+// ─────────────────────────────────────────────────────────────────────
+
+/// Jupiter synodic period: 399 days. Decomposition: 3 · 7 · 19.
+///
+/// **Status:** Proven (Maya astronomy; vault A6).
+///
+/// At the 33-year eclipse epoch T_E = 11,960, Jupiter's displacement is
+/// 11,960 mod 399 = 389. **389 is prime** — outside both the Safe Basis
+/// and the Ramanujan set S_R = {5, 7, 11}. Synthesis bonus finding:
+/// Jupiter carries no S_R prime in its T_E displacement, which is why
+/// T10's S_R-completeness result (Mars + Venus + Saturn) is the *minimal*
+/// recovery set, not an artificial selection.
+pub const JUPITER_SYNODIC: u64 = 399;
+
+/// Saturn synodic period: 378 days. Decomposition: 2 · 3³ · 7.
+///
+/// **Status:** Proven (vault A6, T8).
+///
+/// At T_E = 11,960, Saturn's displacement is 242 = 2 · 11². This is the
+/// **T8 / T-SHADOW-POWER** signature: the missing S_R prime 11 appears
+/// **squared** in Saturn's displacement, providing the deepest "shadow
+/// bond" (Decoded.md §Algorithm 9).
+pub const SATURN_SYNODIC: u64 = 378;
+
+/// Mercury synodic period: 116 days. Decomposition: 2² · 29.
+///
+/// **Status:** Proven (vault C3).
+///
+/// At T_E = 11,960, Mercury's displacement is 12 = 2² · 3 — only
+/// parking-lane (2) and stability-floor (3) primes. Like Jupiter,
+/// Mercury contributes no S_R content, supporting T10's completeness
+/// claim for Mars/Venus/Saturn.
+pub const MERCURY_SYNODIC: u64 = 116;
+
+/// Eclipse table length: 11,960 days = 405 synodic months = 46 Tzolk'in.
+/// Decomposition: 2³ · 5 · 13 · 23.
+///
+/// **Status:** Proven. The 33-year eclipse epoch `T_E` against which all
+/// planetary displacements in T7-T10 are measured.
+pub const ECLIPSE_TABLE_DAYS: u64 = 11_960;
+
+/// Eclipse table correction term: 93 days. Decomposition: 3 · 31.
+///
+/// **Status:** Proven. Used in two-phase K-Elim lift over the coprime
+/// pair (11960, 93). gcd(11960, 93) = 1 enables the lift (vault T5).
+pub const ECLIPSE_CORRECTION: u64 = 93;
+
+/// 33-year epoch in days: 12,053 ≈ 33 · 365.25.
+///
+/// **Status:** Proven.
+///
+/// Distinct from ECLIPSE_TABLE_DAYS (11,960): the 33-year solar epoch is
+/// slightly longer than the eclipse table. The eclipse correction (93)
+/// accounts for the difference: 11,960 + 93 = 12,053.
+pub const EPOCH_33_YEAR: u64 = 12_053;
+
+/// Venus-Haab LCM: 2,920 days = 5 · 584 = 8 · 365. Decomposition: 2³ · 5 · 73.
+///
+/// **Status:** Proven (vault T6).
+///
+/// The "Calendar Round of Venus" — 8 solar years = 5 Venus synodic periods.
+/// Encodes the 8/5 ≈ φ Venus-Earth synchronization in exact integers.
+pub const VENUS_HAAB_LCM: u64 = 2_920;
+
+/// 13-Baktun Long Count: 1,872,000 days = 13 · 144,000. Decomposition: 2⁷ · 3² · 5³ · 13.
+///
+/// **Status:** Proven (vault T4).
+///
+/// The full Maya Long Count cycle. As a CRAM address this requires
+/// winding > 0 (since 1,872,000 > M_SAFE = 30,030). Reconstruction needs
+/// Recombinant CRT (vault §07) or careful u64 tracking.
+pub const LONG_COUNT_13_BAKTUN: u64 = 1_872_000;
+
+/// Lunar nodal cycle in days: 6,793 ≈ 18.6 · 365.
+///
+/// **Status:** Measured (vault OP-DRESDEN-1; synthesis confirmed
+/// 6793 mod 11 = 6 ≠ 0). The lunar nodal cycle does NOT bring prime 11
+/// into the period surface either, leaving prime 11 still confined to
+/// the "displacement interior" of the planetary residue structure.
+pub const LUNAR_NODAL: u64 = 6_793;
+
+/// The three Ramanujan partition primes S_R = {5, 7, 11}.
+///
+/// **Status:** Proven (vault Maya CRT twp-0001 Theorem I).
+///
+/// First-order Ramanujan partition congruences `p(ℓn + δ) ≡ 0 (mod ℓ)`
+/// exist exclusively for these three primes. The Dresden Codex's
+/// astronomical use of {5, 7, 11} as the discriminating primes is the
+/// reason these three appear in the Safe Basis with distinct roles:
+/// 5 = surface (Tzolk'in), 7 = bridge (819-day), 11 = shadow.
+pub const RAMANUJAN_S_R: [u64; 3] = [5, 7, 11];
+
+/// Alias of [`COUNT_819`] using the synthesis-recommended name.
+///
+/// **Status:** Proven. Use either name; both refer to the 819-day count.
+pub const CYCLE_819: u64 = COUNT_819;
+
+// ─────────────────────────────────────────────────────────────────────
+// SD-11 anchor constants (continued)
+// ─────────────────────────────────────────────────────────────────────
+
 /// **Verified** fingerprint of 11⁶ modulo the seven non-11 basis primes,
 /// ordered as {mod 2, mod 3, mod 5, mod 7, mod 13, mod 17, mod 19}.
 ///
@@ -807,6 +911,209 @@ mod tests {
         assert_eq!(13u64 % 4, 1);
         assert_eq!(17u64 % 4, 1);
         assert_eq!(19u64 % 4, 3);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Extended planetary period verification (B-1 + B-4)
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn jupiter_synodic_factorization() {
+        assert_eq!(JUPITER_SYNODIC, 399);
+        assert_eq!(JUPITER_SYNODIC, 3 * 7 * 19);
+    }
+
+    #[test]
+    fn saturn_synodic_factorization() {
+        assert_eq!(SATURN_SYNODIC, 378);
+        assert_eq!(SATURN_SYNODIC, 2 * 3 * 3 * 3 * 7);
+    }
+
+    #[test]
+    fn mercury_synodic_factorization() {
+        assert_eq!(MERCURY_SYNODIC, 116);
+        assert_eq!(MERCURY_SYNODIC, 4 * 29);
+    }
+
+    #[test]
+    fn eclipse_table_factorization_and_lunations() {
+        assert_eq!(ECLIPSE_TABLE_DAYS, 11_960);
+        assert_eq!(ECLIPSE_TABLE_DAYS, 8 * 5 * 13 * 23);
+        // 46 Tzolk'in periods of 260 days each.
+        assert_eq!(ECLIPSE_TABLE_DAYS, 46 * 260);
+        // 405 lunations of (mean) 29.53... — the integer table approximation.
+    }
+
+    #[test]
+    fn eclipse_correction_coprime_with_eclipse_table() {
+        assert_eq!(ECLIPSE_CORRECTION, 93);
+        assert_eq!(ECLIPSE_CORRECTION, 3 * 31);
+        fn gcd(a: u64, b: u64) -> u64 { if b == 0 { a } else { gcd(b, a % b) } }
+        // Vault T5: gcd(11960, 93) = 1 enables the two-phase K-Elim lift.
+        assert_eq!(gcd(ECLIPSE_TABLE_DAYS, ECLIPSE_CORRECTION), 1);
+    }
+
+    #[test]
+    fn epoch_33_year_is_eclipse_plus_correction() {
+        assert_eq!(EPOCH_33_YEAR, 12_053);
+        assert_eq!(EPOCH_33_YEAR, ECLIPSE_TABLE_DAYS + ECLIPSE_CORRECTION);
+    }
+
+    #[test]
+    fn venus_haab_lcm_factors_correctly() {
+        assert_eq!(VENUS_HAAB_LCM, 2_920);
+        assert_eq!(VENUS_HAAB_LCM, 5 * VENUS_SYNODIC);
+        assert_eq!(VENUS_HAAB_LCM, 8 * 365);
+        assert_eq!(VENUS_HAAB_LCM, 8 * 5 * CALENDAR_PRIME);
+    }
+
+    #[test]
+    fn long_count_13_baktun() {
+        assert_eq!(LONG_COUNT_13_BAKTUN, 1_872_000);
+        assert_eq!(LONG_COUNT_13_BAKTUN, 13 * BAKTUN);
+        // Exceeds M_SAFE — requires Recombinant CRT for residue-only reconstruction.
+        assert!(LONG_COUNT_13_BAKTUN > M_SAFE);
+        // Winding count over M_SAFE.
+        assert_eq!(LONG_COUNT_13_BAKTUN / M_SAFE, 62);
+    }
+
+    #[test]
+    fn lunar_nodal_does_not_introduce_lane_11() {
+        // Vault OP-DRESDEN-1 + synthesis bonus arithmetic.
+        // 6793 = 617·11 + 6, so 6793 mod 11 = 6 ≠ 0.
+        assert_eq!(LUNAR_NODAL, 6_793);
+        assert_eq!(LUNAR_NODAL % 11, 6);
+        // Full Safe Basis signature per synthesis Appendix B item 2.
+        assert_eq!(cram_address(LUNAR_NODAL), [1, 1, 3, 3, 6, 7]);
+        // Closes part of OP-DRESDEN-1: the lunar nodal cycle does NOT
+        // restore the 11-channel into the period surface.
+        assert!(active_lanes(LUNAR_NODAL).contains(&11));
+        assert_ne!(LUNAR_NODAL % 11, 0);
+    }
+
+    #[test]
+    fn ramanujan_s_r_is_5_7_11() {
+        assert_eq!(RAMANUJAN_S_R, [5u64, 7, 11]);
+        // All three are in the Safe Basis.
+        for &p in &RAMANUJAN_S_R {
+            assert!(SAFE_BASIS.contains(&p), "S_R prime {} must be in Safe Basis", p);
+        }
+    }
+
+    #[test]
+    fn cycle_819_alias() {
+        assert_eq!(CYCLE_819, COUNT_819);
+        assert_eq!(CYCLE_819, 819);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // T10 — S_R Distribution at T_E = 11,960 (preview; full module in B-2)
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn t9_mars_displacement_at_t_e_is_tzolkin() {
+        // Vault T9: Mars displacement at T_E = 11,960 equals exactly one Tzolk'in.
+        let displacement = ECLIPSE_TABLE_DAYS % MARS_SYNODIC;
+        assert_eq!(displacement, 260);
+        assert_eq!(displacement, 4 * 5 * 13); // = T_tz factorization
+        // Mars carries S_R prime 5 in its displacement.
+        assert_eq!(displacement % 5, 0);
+    }
+
+    #[test]
+    fn t10_venus_displacement_at_t_e_carries_5_and_7() {
+        // Vault T10: Venus displacement at T_E is 280 = 2³·5·7.
+        let displacement = ECLIPSE_TABLE_DAYS % VENUS_SYNODIC;
+        assert_eq!(displacement, 280);
+        assert_eq!(displacement, 8 * 5 * 7);
+        // Venus carries S_R primes {5, 7} in its displacement.
+        assert_eq!(displacement % 5, 0);
+        assert_eq!(displacement % 7, 0);
+    }
+
+    #[test]
+    fn t8_saturn_displacement_at_t_e_is_two_eleven_squared() {
+        // Vault T8 / T-SHADOW-POWER: Saturn displacement = 242 = 2·11².
+        let displacement = ECLIPSE_TABLE_DAYS % SATURN_SYNODIC;
+        assert_eq!(displacement, 242);
+        assert_eq!(displacement, 2 * 11 * 11);
+        // Saturn carries 11² in its displacement — the deep shadow signature.
+        assert_eq!(displacement % (11 * 11), 0);
+    }
+
+    #[test]
+    fn jupiter_displacement_at_t_e_is_389_prime() {
+        // Synthesis bonus discovery: Jupiter at T_E = 11,960 has
+        // displacement 389, which is prime and outside both Safe Basis
+        // and S_R. This supports T10's S_R-completeness for Mars/Venus/Saturn.
+        let displacement = ECLIPSE_TABLE_DAYS % JUPITER_SYNODIC;
+        assert_eq!(displacement, 389);
+        // Verify 389 is prime: not divisible by any prime ≤ √389 ≈ 19.7.
+        for p in [2u64, 3, 5, 7, 11, 13, 17, 19] {
+            assert_ne!(displacement % p, 0,
+                "if 389 mod {} == 0, then 389 isn't prime", p);
+        }
+        // Jupiter carries no S_R prime in its T_E displacement.
+        for &p in &RAMANUJAN_S_R {
+            assert_ne!(displacement % p, 0,
+                "Jupiter displacement should not carry S_R prime {}", p);
+        }
+    }
+
+    #[test]
+    fn mercury_displacement_at_t_e_is_parking_plus_stability() {
+        // Synthesis bonus: Mercury at T_E = 11,960 has displacement
+        // 12 = 2²·3 — only parking (2) and stability-floor (3) primes,
+        // no S_R content.
+        let displacement = ECLIPSE_TABLE_DAYS % MERCURY_SYNODIC;
+        assert_eq!(displacement, 12);
+        assert_eq!(displacement, 4 * 3);
+        // No S_R primes.
+        for &p in &RAMANUJAN_S_R {
+            assert_ne!(displacement % p, 0,
+                "Mercury displacement should not carry S_R prime {}", p);
+        }
+    }
+
+    #[test]
+    fn t10_complete_s_r_distribution_at_t_e() {
+        // The headline T10 claim: at T_E = 11,960, the complete
+        // S_R = {5, 7, 11} is distributed across exactly Mars + Venus + Saturn,
+        // with no overlap of "missing" or "extra" primes.
+        let mars_d   = ECLIPSE_TABLE_DAYS % MARS_SYNODIC;     // 260
+        let venus_d  = ECLIPSE_TABLE_DAYS % VENUS_SYNODIC;    // 280
+        let saturn_d = ECLIPSE_TABLE_DAYS % SATURN_SYNODIC;   // 242
+
+        // Mars contains 5 (and 13, but 13 is boundary not S_R).
+        assert_eq!(mars_d % 5, 0);
+        // Venus contains both 5 and 7 (the accessible S_R).
+        assert_eq!(venus_d % 5, 0);
+        assert_eq!(venus_d % 7, 0);
+        // Saturn contains 11² (the deepest shadow-power signature).
+        assert_eq!(saturn_d % (11 * 11), 0);
+
+        // Union covers all of S_R = {5, 7, 11}.
+        // (Note: lane 5 appears in both Mars and Venus, which is fine —
+        // the claim is that S_R is *covered*, not partitioned.)
+    }
+
+    #[test]
+    fn cycle_819_lane_7_active_via_lane_11_inactive() {
+        // Vault T7 / Lemma L7: 819 brings p=7 into the period surface
+        // (since 819 = 3²·7·13), but p=11 remains absent.
+        assert_eq!(CYCLE_819 % 7, 0);   // 7 active in surface
+        assert_eq!(CYCLE_819 % 11, 5);  // 11 absent (residue 5, not 0)
+        // 11 ∤ 819 — vault Lemma L7 confirmed.
+    }
+
+    #[test]
+    fn algo_20_arcsecond_check_278289_mod_11_zero() {
+        // Decoded.md §Algorithm 20: 77°18' = 278,289 arcseconds, mod 11 = 0.
+        // Arithmetic claim verified (cultural claim about Maya tracking
+        // arcseconds remains Open per synthesis O8).
+        let arcseconds: u64 = 278_289;
+        assert_eq!(arcseconds % 11, 0);
+        assert_eq!(arcseconds, 25_299 * 11);
     }
 
     #[test]
