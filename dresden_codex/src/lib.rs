@@ -74,6 +74,111 @@ pub const CALENDAR_ROUND: u64 = 18_980;
 /// Long Count baktun: 144,000 days.
 pub const BAKTUN: u64 = 144_000;
 
+/// Mars synodic period: 780 days. Maya cycle for the Chaak/Mars tables
+/// (Dresden Codex pages 29–45). Decomposition: 780 = 2²·3·5·13.
+///
+/// **Status:** Proven (vault A-10 §A.10.8 residue table, cross-validated
+/// against `cram_address` in this crate's test suite).
+///
+/// **Significance:** the 780-day stride is selective-lane-nullifying on
+/// {2,3,5,13}; only lanes 7 and 11 advance under this stride (see
+/// `dccms_atlas::substrate_roles` for role taxonomy). This is the
+/// canonical Maya stride for isolating the Bridge (7) and Shadow (11)
+/// lanes from the surface calendar lanes.
+pub const MARS_SYNODIC: u64 = 780;
+
+/// The 819-day count. Maya cycle attested at multiple inscriptions
+/// (Tortuguero, Palenque, Yaxchilán). Decomposition: 819 = 3²·7·13.
+///
+/// **Status:** Proven (vault A-10 §A.10.8 residue table).
+///
+/// **Significance:** the 819-day count is the **unique** Maya cycle that
+/// brings prime 7 into the period surface. Without 819, the Maya calendar
+/// system never directly activates lane 7 — it is the "Bridge" cycle in
+/// Decoded.md's Ramanujan-gate analysis. Residue signature
+/// `(1, 0, 4, 0, 5, 0)` mod Safe Basis.
+pub const COUNT_819: u64 = 819;
+
+/// Maya "coprime core" — the subset of the Safe Basis the Maya cycle
+/// system explicitly activates: `{2² (=4), 3, 5, 13}`.
+///
+/// The Maya did not natively address primes 7 and 11 except via the
+/// 819-day count (lane 7) and via shadow-displacement detection on
+/// lane 11 (the H5 universal-coordinate result). This 4-prime subset
+/// covers Tzolk'in (260), Haab (365 via lane 5), Calendar Round (18,980),
+/// and Mars (780).
+///
+/// **Status:** Measured / structurally observed in vault A-10 §A.10.2.1.
+pub const MAYA_COPRIME_CORE: [u64; 4] = [4, 3, 5, 13];
+
+/// "Calendar Prime" 73. Appears in Haab (365 = 5·73) and Calendar Round
+/// (18,980 = 2²·5·13·73) but is NOT in the canonical Safe Basis.
+///
+/// **Status:** Proven (factorization). Architectural decision pending:
+/// whether to extend `SAFE_BASIS` to include 73, or leave 73 as a
+/// "Calendar Prime" sidecar without modifying the canonical 6-lane basis.
+/// The current code keeps the 6-lane Safe Basis canonical and exposes
+/// `CALENDAR_PRIME` as a separate constant for downstream consumers that
+/// need to address Haab/Calendar-Round arithmetic exactly.
+pub const CALENDAR_PRIME: u64 = 73;
+
+// ─────────────────────────────────────────────────────────────────────
+// Shadow Disambiguator (SD-11) — per vault §09
+// ─────────────────────────────────────────────────────────────────────
+
+/// Extended Safe Basis 𝒮 = {2, 3, 5, 7, 11, 13, 17, 19}. The canonical
+/// 8-prime CRAM basis of the framework. The Dresden Codex application
+/// uses the 6-prime subset {2..13}; SD-11 and chimera disambiguation
+/// require all 8.
+pub const SAFE_BASIS_S8: [u64; 8] = [2, 3, 5, 7, 11, 13, 17, 19];
+
+/// Shadow anchor value 11⁶ = 1,771,561.
+///
+/// The vorticity-wraparound bound for the N=32 Navier-Stokes solver
+/// per vault §09.2.3 (S3 property). For Dresden Codex usage it is the
+/// scale at which the shadow lane (p=11) would wrap, well above any
+/// Maya cycle period in the canonical corpus.
+pub const SHADOW_ANCHOR_11_POW_6: u64 = 1_771_561;
+
+/// Shadow Disambiguator anchor set {11⁶, 13, 17, 19}. Pairwise coprime
+/// per vault §09.4.2. Forms a valid CRT decomposition with product
+/// 11⁶ · 13 · 17 · 19 = 7,437,683,639.
+///
+/// This is the corrected anchor set (vault §09.4.3). The earlier
+/// formulation {11², 11³, 11⁴} = {121, 1331, 14641} was internally
+/// consistent but NOT pairwise coprime, so it did not form a CRT
+/// decomposition.
+pub const SHADOW_ANCHOR_SET: [u64; 4] = [SHADOW_ANCHOR_11_POW_6, 13, 17, 19];
+
+/// Product of the shadow anchor set: 11⁶ · 13 · 17 · 19 = **7,438,784,639**.
+///
+/// **Status:** Proven by direct integer multiplication.
+///
+/// **Note on vault correction:** Vault §09.4.2 publishes this product
+/// as 7,437,683,639. The published value does not match direct
+/// computation; further, 7,437,683,639 mod 4199 = 3337 ≠ 0, so it
+/// cannot be a multiple of 13·17·19 = 4199 — it is not a product of
+/// those primes with any integer. The discrepancy of 1,101,000 looks
+/// like a transcription error. The structural role of the anchor set
+/// is unaffected; only the published numeric label was wrong.
+pub const SHADOW_ANCHOR_PRODUCT: u64 = 7_438_784_639;
+
+/// **Verified** fingerprint of 11⁶ modulo the seven non-11 basis primes,
+/// ordered as {mod 2, mod 3, mod 5, mod 7, mod 13, mod 17, mod 19}.
+///
+/// **Status:** Proven by direct computation (see `sd_11_fingerprint_*`
+/// tests in this module).
+///
+/// **Note on vault correction:** Vault §09.2.4 publishes the fingerprint
+/// as `{1, 1, 1, 5, 10, 13, 9}`. This codebase's direct integer
+/// computation produces `{1, 1, 1, 1, 12, 8, 1}`. The discrepancy is
+/// flagged for vault correction; the structural role of 11⁶ as anchor
+/// is unaffected — only the published residue values were transcribed
+/// incorrectly. By Fermat's little theorem, 11⁶ ≡ 1 mod 7 (since
+/// 6 = 7−1) is forced, ruling out the vault's `5` value at lane 7. The
+/// other corrections follow from direct computation.
+pub const SD_11_FINGERPRINT: [u64; 7] = [1, 1, 1, 1, 12, 8, 1];
+
 // ═══════════════════════════════════════════════════════════════════
 // §2  CRAM address arithmetic
 // ═══════════════════════════════════════════════════════════════════
@@ -490,5 +595,238 @@ mod tests {
         fn gcd(a: u64, b: u64) -> u64 { if b == 0 { a } else { gcd(b, a % b) } }
         let lcm = 260 * 365 / gcd(260, 365);
         assert_eq!(CALENDAR_ROUND, lcm);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Vault A-10 §A.10.8 cross-validation
+    // ─────────────────────────────────────────────────────────────────
+    //
+    // The user's HackFate compendium addendum A-10 publishes a residue
+    // table for six Maya cycles modulo the Safe Basis. The numbers were
+    // independently produced (Kimi → Claude verification chain, per
+    // A-10 §A.10.4.1). We cross-check them against `cram_address` here
+    // as a second-source regression — divergence means either A-10 is
+    // wrong or our substrate is. Both should fail safely if so.
+    //
+    // Source: ~/Agents/imports/github/HackFate/A-10_dresden_codex.md §A.10.8
+
+    #[test]
+    fn a10_residue_table_260_tzolkin() {
+        // 260 = 4 · 5 · 13;  expected mod {2,3,5,7,11,13} = (0, 2, 0, 1, 7, 0)
+        assert_eq!(cram_address(260), [0, 2, 0, 1, 7, 0]);
+        assert_eq!(260, 4 * 5 * 13);
+    }
+
+    #[test]
+    fn a10_residue_table_365_haab() {
+        // 365 = 5 · 73;  expected (1, 2, 0, 1, 2, 1)
+        assert_eq!(cram_address(365), [1, 2, 0, 1, 2, 1]);
+        assert_eq!(365, 5 * CALENDAR_PRIME);
+    }
+
+    #[test]
+    fn a10_residue_table_584_venus() {
+        // 584 = 2³ · 73;  expected (0, 2, 4, 3, 1, 12)
+        assert_eq!(cram_address(VENUS_SYNODIC), [0, 2, 4, 3, 1, 12]);
+        assert_eq!(VENUS_SYNODIC, 8 * CALENDAR_PRIME);
+    }
+
+    #[test]
+    fn a10_residue_table_780_mars() {
+        // 780 = 4 · 3 · 5 · 13 = lcm(Maya coprime core);
+        // expected (0, 0, 0, 3, 10, 0) — selective lane nullification on {2,3,5,13}
+        assert_eq!(cram_address(MARS_SYNODIC), [0, 0, 0, 3, 10, 0]);
+        // Mars stride is lcm of the Maya coprime core {4,3,5,13}.
+        let core = MAYA_COPRIME_CORE;
+        fn lcm(a: u64, b: u64) -> u64 {
+            fn gcd(a: u64, b: u64) -> u64 { if b == 0 { a } else { gcd(b, a % b) } }
+            a / gcd(a, b) * b
+        }
+        let core_lcm = core.iter().fold(1u64, |acc, &p| lcm(acc, p));
+        assert_eq!(MARS_SYNODIC, core_lcm);
+        // Selective lane nullification: only lanes 7 and 11 are active.
+        assert_eq!(active_lanes(MARS_SYNODIC), vec![7, 11]);
+        assert_eq!(nullified_lanes(MARS_SYNODIC), vec![2, 3, 5, 13]);
+    }
+
+    #[test]
+    fn a10_residue_table_819_count() {
+        // 819 = 3² · 7 · 13;  expected (1, 0, 4, 0, 5, 0)
+        // The unique Maya cycle that brings p=7 into the period surface.
+        assert_eq!(cram_address(COUNT_819), [1, 0, 4, 0, 5, 0]);
+        assert_eq!(COUNT_819, 9 * 7 * 13);
+        // Bridge-lane signature: 819 is divisible by 7 (Bridge prime nullified
+        // in this cycle's surface, meaning the cycle ITSELF acts on lane 7).
+        assert!(nullified_lanes(COUNT_819).contains(&7));
+    }
+
+    #[test]
+    fn a10_residue_table_18980_calendar_round() {
+        // 18,980 = 2² · 5 · 13 · 73;  expected (0, 2, 0, 3, 5, 0)
+        assert_eq!(cram_address(CALENDAR_ROUND), [0, 2, 0, 3, 5, 0]);
+        assert_eq!(CALENDAR_ROUND, 4 * 5 * 13 * CALENDAR_PRIME);
+        // CALENDAR_PRIME (73) is required to factor 18980 exactly,
+        // but is NOT in the canonical 6-lane Safe Basis.
+        assert!(!SAFE_BASIS.contains(&CALENDAR_PRIME));
+    }
+
+    #[test]
+    fn maya_coprime_core_is_subset_of_safe_basis_or_powers() {
+        // Maya coprime core = {4, 3, 5, 13}. The 4 is 2² — its prime
+        // factor (2) is in the Safe Basis. The other three (3, 5, 13)
+        // are direct members.
+        assert_eq!(MAYA_COPRIME_CORE, [4u64, 3, 5, 13]);
+        for &p in &MAYA_COPRIME_CORE {
+            let is_prime_in_basis = SAFE_BASIS.contains(&p);
+            let is_prime_power = p == 4; // 2²
+            assert!(is_prime_in_basis || is_prime_power,
+                "Maya-core element {} must be a Safe-Basis prime or its power", p);
+        }
+    }
+
+    #[test]
+    fn mars_stride_silences_safe_basis_minus_seven_eleven() {
+        // Decoded.md §Algorithm 6 — 780-day stride nullifies {2,3,5,13}.
+        // Quoted deltas: 780 mod 7 = 3, 780 mod 11 = 10.
+        assert_eq!(MARS_SYNODIC % 7, 3);
+        assert_eq!(MARS_SYNODIC % 11, 10);
+        for &p in &[2u64, 3, 5, 13] {
+            assert_eq!(MARS_SYNODIC % p, 0, "MARS_SYNODIC must be divisible by {}", p);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Shadow Disambiguator (SD-11) — vault §09 verification
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn sd_11_safe_basis_s8_has_eight_primes() {
+        assert_eq!(SAFE_BASIS_S8.len(), 8);
+        assert_eq!(SAFE_BASIS_S8, [2u64, 3, 5, 7, 11, 13, 17, 19]);
+        // The first six match the canonical SAFE_BASIS used for Dresden.
+        for i in 0..6 {
+            assert_eq!(SAFE_BASIS_S8[i], SAFE_BASIS[i]);
+        }
+    }
+
+    #[test]
+    fn sd_11_anchor_value_is_eleven_to_sixth() {
+        let mut x: u64 = 1;
+        for _ in 0..6 { x *= 11; }
+        assert_eq!(x, SHADOW_ANCHOR_11_POW_6);
+        assert_eq!(SHADOW_ANCHOR_11_POW_6, 1_771_561);
+    }
+
+    #[test]
+    fn sd_11_anchor_set_is_pairwise_coprime() {
+        // Vault §09.4.2: anchor set must form a valid CRT decomposition.
+        fn gcd(a: u64, b: u64) -> u64 { if b == 0 { a } else { gcd(b, a % b) } }
+        for i in 0..SHADOW_ANCHOR_SET.len() {
+            for j in (i + 1)..SHADOW_ANCHOR_SET.len() {
+                let g = gcd(SHADOW_ANCHOR_SET[i], SHADOW_ANCHOR_SET[j]);
+                assert_eq!(g, 1,
+                    "anchor[{}]={} and anchor[{}]={} must be coprime (gcd={})",
+                    i, SHADOW_ANCHOR_SET[i], j, SHADOW_ANCHOR_SET[j], g);
+            }
+        }
+    }
+
+    #[test]
+    fn sd_11_anchor_product_matches_constant() {
+        // Vault §09.4.2: anchor product = 11⁶ · 13 · 17 · 19.
+        //
+        // Computed directly:
+        //   1,771,561 · 13         = 23,030,293
+        //   23,030,293 · 17        = 391,514,981
+        //   391,514,981 · 19       = 7,438,784,639
+        //
+        // The vault publishes 7,437,683,639. That value is not a
+        // multiple of 4199 = 13·17·19, so it cannot be a product of
+        // those primes with any integer. See SHADOW_ANCHOR_PRODUCT
+        // doc comment for the transcription-error analysis.
+        let mut prod: u64 = 1;
+        for &p in &SHADOW_ANCHOR_SET {
+            prod *= p;
+        }
+        assert_eq!(prod, SHADOW_ANCHOR_PRODUCT);
+        assert_eq!(SHADOW_ANCHOR_PRODUCT,
+            SHADOW_ANCHOR_11_POW_6 * 13 * 17 * 19);
+        assert_eq!(SHADOW_ANCHOR_PRODUCT, 7_438_784_639);
+        // The vault's published 7,437,683,639 is NOT a multiple of 4199.
+        // Locked in as a Proven-by-arithmetic non-match (negative test).
+        assert_ne!(7_437_683_639u64 % 4199, 0,
+            "vault's published anchor product 7,437,683,639 is not a multiple of 13·17·19");
+    }
+
+    #[test]
+    fn sd_11_fingerprint_matches_direct_computation() {
+        // The corrected fingerprint per direct integer computation.
+        // Vault §09.2.4 publishes {1, 1, 1, 5, 10, 13, 9}; this codebase's
+        // computation produces {1, 1, 1, 1, 12, 8, 1}. By Fermat's little
+        // theorem, 11⁶ mod 7 = 1 is forced (since 6 = 7-1), ruling out
+        // the vault's `5` entry. The other lanes are confirmed below.
+        let basis_minus_11 = [2u64, 3, 5, 7, 13, 17, 19];
+        let computed: Vec<u64> = basis_minus_11.iter()
+            .map(|&p| SHADOW_ANCHOR_11_POW_6 % p).collect();
+        assert_eq!(computed.as_slice(), &SD_11_FINGERPRINT[..]);
+    }
+
+    #[test]
+    fn sd_11_fingerprint_structural_properties() {
+        // The corrected fingerprint exhibits a cleaner structure than
+        // the vault's published values: 11⁶ acts as identity in five
+        // lanes {2, 3, 5, 7, 19} and is non-trivial only in {13, 17}.
+        let idx_2  = 0;  // basis-minus-11 ordering
+        let idx_3  = 1;
+        let idx_5  = 2;
+        let idx_7  = 3;
+        let idx_13 = 4;
+        let idx_17 = 5;
+        let idx_19 = 6;
+        for i in [idx_2, idx_3, idx_5, idx_7, idx_19] {
+            assert_eq!(SD_11_FINGERPRINT[i], 1,
+                "lane index {} should be identity (≡1)", i);
+        }
+        // Lane 13: 11⁶ ≡ 12 ≡ −1 mod 13 (boundary-negation signature).
+        assert_eq!(SD_11_FINGERPRINT[idx_13], 12);
+        assert_eq!(SD_11_FINGERPRINT[idx_13] + 1, 13);
+        // Lane 17: 11⁶ ≡ 8 = 2³ mod 17 (cubic-root structure).
+        assert_eq!(SD_11_FINGERPRINT[idx_17], 8);
+        assert_eq!(SD_11_FINGERPRINT[idx_17], 2u64.pow(3));
+    }
+
+    #[test]
+    fn sd_11_property_s1_legendre_minus_one() {
+        // S1: ((-1)/p) = -1 means -1 is a quadratic non-residue mod p.
+        // Equivalent to p ≡ 3 mod 4.
+        // 11 mod 4 = 3 → S1 holds for 11. [verified]
+        // 13 mod 4 = 1 → S1 fails. [vault confirms]
+        // 17 mod 4 = 1 → S1 fails. [vault confirms]
+        // 19 mod 4 = 3 → S1 holds for 19. [vault notes 19 also passes]
+        assert_eq!(11u64 % 4, 3);
+        assert_eq!(13u64 % 4, 1);
+        assert_eq!(17u64 % 4, 1);
+        assert_eq!(19u64 % 4, 3);
+    }
+
+    #[test]
+    fn sd_11_property_s2_two_is_primitive_root_mod_11() {
+        // S2 (revised, per vault §09.2.2): 2 is a primitive root mod p.
+        // For p=11 the multiplicative order of 2 must be exactly 10.
+        let mut order = 0u64;
+        let mut x = 1u64;
+        for k in 1..=11 {
+            x = (x * 2) % 11;
+            if x == 1 { order = k; break; }
+        }
+        assert_eq!(order, 10, "order of 2 mod 11 must be 10");
+        // Also verify the vault's intermediate residues sequence:
+        // 2, 4, 8, 5, 10, 9, 7, 3, 6, 1
+        let expected_orbit = [2u64, 4, 8, 5, 10, 9, 7, 3, 6, 1];
+        let mut y = 1u64;
+        for k in 0..10 {
+            y = (y * 2) % 11;
+            assert_eq!(y, expected_orbit[k]);
+        }
     }
 }
