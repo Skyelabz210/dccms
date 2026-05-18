@@ -1,7 +1,7 @@
 # DCCMS — Dresden Codex Configuration Manifold Study
 
-**Version:** 0.6.0
-**Tests:** 288 passing, 0 failing (262 dccms_atlas + 24 dresden_codex + 2 prime_hunt)
+**Version:** 0.7.0-dev
+**Tests:** 354 passing, 0 failing (328 dccms_atlas + 24 dresden_codex + 2 prime_hunt)
 **Author:** Anthony Diaz (Acid) — HackFate.us / Skyelabz210
 **Computational collaborator:** Claude (Anthropic)
 
@@ -90,14 +90,37 @@ Exact integers, no floats.
 | H3-b | Temperaments-4fold (28d) | SUPPORTED (39%) |
 | H3-c | EclipseAlt (325d) | SUPPORTED (32%) |
 | H3-ext | 73-family + intercalary family | SUPPORTED |
-| H4 | Goddess section encodes metadata | **PARTIAL — visual transducer pending** |
+| H4 | Goddess section encodes metadata | **SUPPORTED** (v0.7.0-dev — visual transducer closes the diagram) |
 | H5 | Prime 11 universal coordinate | SUPPORTED (Level-2/3+ theorem) |
 | Binding | Venus/Eclipse = Tzolk'in carry class | THEOREM (all 5 parts) |
 
-H4 is the one open item. The *non-visual* side is built (six instruments
-in `h4_instruments.rs` + `h4_non_visual.rs` + `h4_montgomery.rs`); what
-remains is the **visual transducer** — the map from the painted figures
-and bar-and-dot glyphs on the actual codex pages to CRAM addresses.
+**v0.7.0-dev: H4 closed.** The visual transducer is built and mechanically
+verified — see [executioner_dag.md](executioner_dag.md). The new
+`h4_visual` module (10 files, 50+ tests) provides:
+
+- A `GlyphAlphabet<const K: usize>` trait with implementors for
+  `BarDotNumeral`, `DayNameGlyph` (20 Tzolk'in days), `MonthGlyph`
+  (18 Haab months + Wayeb), and `IconographicFigure` (9 Goddess pages).
+- A `PageLayout` whose cumulative CRAM addresses match
+  `MoonGoddessProfile::page_cram_addresses` **exactly** (Operator
+  Consistency contract closed).
+- A basis-parameterized `lift<const K>` that scales from K=6 (canonical
+  Safe Basis) to K=7, K=8, K=10 with the first six lanes invariant —
+  *arbitrary-precise scalability exhibited per-K, not asserted.*
+- Five-Contract test gates (Object / Topology / Uniformity / Operator
+  Consistency / Discharge) per the ns-continuum-bridge discipline.
+- Two structural facts surfaced by the fifth-operator gate:
+  * **Eb and Keh are lane-11 zeros of the Tzolk'in and Haab cycles** —
+    the navigation coordinate resets at the structural midpoint of each
+    cycle, not at its endpoint.
+  * **The Goddess-section total (1448 days) is K-Elim Level 3 at p=11**
+    (clears the 11³=1331 long-cycle threshold by 117 days, 8.8% margin).
+
+The next phase (SEG01–SEG03) ingests actual codex pixels. By the Object
+contract this is firewalled off the H4 closure path; the transducer is
+correct independent of pixel quality. See
+[docs/imagery_sources.md](docs/imagery_sources.md) for the public-domain
+imagery survey.
 
 ---
 

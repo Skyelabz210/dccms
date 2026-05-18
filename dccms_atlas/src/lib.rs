@@ -114,6 +114,9 @@ pub mod codex_decoder;
 pub mod venus_kernel;
 pub mod substrate_roles;
 
+// ── v0.7.0-dev — H4 visual transducer (in progress, see executioner_dag.md)
+pub mod h4_visual;
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════
@@ -174,7 +177,7 @@ pub const H4_INSTRUMENT_COUNT: usize = 6;
 // Project version
 // ═══════════════════════════════════════════════════════════════════
 
-pub const DCCMS_VERSION: &str = "0.6.0";
+pub const DCCMS_VERSION: &str = "0.7.0-dev";
 pub const DCCMS_DECLARATION_DATE: &str = "2026-05-16";
 
 #[cfg(test)]

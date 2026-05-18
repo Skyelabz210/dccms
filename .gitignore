@@ -16,3 +16,6 @@ Thumbs.db
 # Local-only experimentation
 /scratch/
 /tmp/
+
+# Swarm-dispatch transcripts (codex/gemini per-run logs)
+.swarm_logs/
