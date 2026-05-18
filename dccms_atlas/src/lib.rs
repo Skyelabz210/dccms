@@ -120,6 +120,9 @@ pub mod h4_visual;
 // ── v0.8.0-dev — codex topology (11 sections, pages 1-74)
 pub mod codex_topology;
 
+// ── v0.8.0-dev — DPM-PRIME theorem stack (T1-T10, L1-L10, V1-V14)
+pub mod dpm_prime;
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════
