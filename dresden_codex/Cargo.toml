@@ -1,0 +1,6 @@
+[package]
+name = "dresden_codex"
+version = "0.1.0"
+edition = "2021"
+authors = ["Acid"]
+description = "Dresden Codex substrate — Safe Basis arithmetic and multi-phase schemas"

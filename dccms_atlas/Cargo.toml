@@ -1,0 +1,15 @@
+[package]
+name = "dccms_atlas"
+version = "0.6.0"
+edition = "2021"
+authors = ["Acid"]
+description = "Dresden Codex Configuration Manifold Study — query layer on the QMNF substrate"
+
+[dependencies]
+dresden_codex   = { path = "../dresden_codex" }
+prime_hunt      = { path = "../prime_hunt" }
+
+[features]
+default = []
+# Enable expensive atlas-build operations
+heavy   = []

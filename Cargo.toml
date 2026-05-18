@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "dccms_atlas",
+    "dresden_codex",
+    "prime_hunt",
+]
