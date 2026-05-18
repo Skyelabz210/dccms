@@ -1,21 +1,33 @@
-//! # DPM-PRIME — Dresden Prime Manifold Theorem Stack
+//! # DPM-PRIME — Mechanized Arithmetic Certificate Suite
 //!
-//! Mechanization of the 10-theorem stack in vault `The Dresden Codex.md`
-//! §AXIOMS, §DEFINITIONS, §LEMMAS, §THEOREMS, §VALIDATION IDENTITIES.
+//! Direct-integer-computation checks of the 10-theorem stack in vault
+//! `The Dresden Codex.md` §AXIOMS, §DEFINITIONS, §LEMMAS, §THEOREMS,
+//! §VALIDATION IDENTITIES.
 //!
 //! Each theorem returns a [`TheoremResult`] with an explicit witness. The
-//! arithmetic claims are all `native_decide`-equivalent in Lean 4 per the
-//! vault's verification status; this module makes them `cargo test`-decidable
-//! in Rust.
+//! arithmetic claims are `native_decide`-equivalent in Lean 4 per the
+//! vault's verification status; this module renders them
+//! `cargo test`-decidable in Rust. **This is an arithmetic certificate
+//! suite, not a Lean/Coq formal proof artifact** — the latter lives
+//! upstream (vault references `TUDPBoundary.lean` and the FSM-PRIME
+//! infrastructure). The Rust tests are executable evidence that the
+//! integer arithmetic underlying each theorem holds; they do not
+//! replace the formal proofs and do not constitute one.
 //!
 //! **Source:** `~/Agents/imports/github/HackFate/The Dresden Codex.md`
 //! lines 35-423 (DPM-PRIME stack).
 //!
-//! **Status:** 9 of 10 theorems are fully Proven by arithmetic in this
-//! module; T4 (Long Count = covering space of Calendar Round) returns
-//! `Conditional` because the explicit Long Count → M_Fib covering-morphism
-//! is structural per the vault and depends on infrastructure (`M_Fib`)
-//! that lives outside dccms.
+//! **Status:**
+//! - 9 of 10 theorems certified by integer arithmetic in this module.
+//! - 1 of 10 theorems (T4: Long Count = covering space of Calendar Round)
+//!   returns [`TheoremResult::Conditional`] because the explicit Long
+//!   Count → M_Fib covering-morphism is structural per the vault and
+//!   depends on infrastructure (`M_Fib`) that lives outside dccms.
+//! - 14 of 14 validation identities (V1–V14) certified verbatim from
+//!   the vault.
+//! - 1 additional companion identity (V14_strict) added during
+//!   v0.8.0 precision hardening to align with Theorem T2's exact
+//!   predicate (V14 as published is strictly weaker than T2).
 
 #![allow(dead_code)]
 
@@ -235,43 +247,109 @@ pub mod theorems {
     }
 
     /// **T3** — 819 = three-tier structure product `3² · 7 · 13`.
+    ///
+    /// Minimality is established by **exhaustive bounded exclusion**: no
+    /// integer `n` with `1 ≤ n < 819` simultaneously satisfies `9 ∣ n`,
+    /// `7 ∣ n`, and `13 ∣ n`. This is equivalent to `lcm(9, 7, 13) = 819`
+    /// since 9, 7, 13 are pairwise coprime.
     pub fn t3_819_three_tier() -> TheoremResult {
         let l3 = lemmas::l3_three_tier_819();
         if !l3.is_pass() { return l3; }
-        // Minimality: the smallest integer containing 3², 7, and 13 as factors
-        // is 3·3·7·13 = 819 itself (smaller candidates like 3·7·13 = 273
-        // use only 3¹, not 3²).
-        let with_only_3_once: u64 = 3 * 7 * 13;  // 273
-        if with_only_3_once >= COUNT_819 {
-            return TheoremResult::Fail { reason: "273 should be less than 819".into() };
+        // Exhaustive bounded exclusion over 1..819.
+        for n in 1u64..COUNT_819 {
+            if n % 9 == 0 && n % 7 == 0 && n % 13 == 0 {
+                return TheoremResult::Fail {
+                    reason: format!(
+                        "n = {} < 819 satisfies 9|n ∧ 7|n ∧ 13|n — minimality violated",
+                        n
+                    )
+                };
+            }
         }
-        // 273 lacks the 3² factor; 819 is the next valid candidate.
-        if 273 % 9 == 0 {
-            return TheoremResult::Fail { reason: "273 should not be divisible by 9".into() };
+        // And 819 itself satisfies all three conditions.
+        if !(COUNT_819 % 9 == 0 && COUNT_819 % 7 == 0 && COUNT_819 % 13 == 0) {
+            return TheoremResult::Fail {
+                reason: "819 should satisfy 9|n ∧ 7|n ∧ 13|n but does not".into()
+            };
         }
-        if COUNT_819 % 9 != 0 {
-            return TheoremResult::Fail { reason: "819 should be divisible by 9".into() };
+        // And the lcm computation agrees: lcm(9,7,13) = 819.
+        let lcm_9_7_13 = lcm(lcm(9, 7), 13);
+        if lcm_9_7_13 != COUNT_819 {
+            return TheoremResult::Fail {
+                reason: format!("lcm(9,7,13) = {} != 819", lcm_9_7_13)
+            };
         }
-        TheoremResult::pass("819 = minimum (stability²·last_S_R·boundary) product")
+        TheoremResult::pass(
+            "819 = lcm(9, 7, 13) = minimum n with 9|n ∧ 7|n ∧ 13|n \
+             (exhaustively excluded over 1..819)"
+        )
     }
 
     /// **T4** — Long Count as covering space of Calendar Round (Conditional).
+    ///
+    /// The arithmetic component is proven exactly without decimals:
+    ///
+    /// ```text
+    ///   1,872,000 / 18,980  =  7200 / 73  =  98 + 46/73
+    /// ```
+    ///
+    /// after dividing numerator and denominator by `gcd = 260`. Non-integrality
+    /// is proven by `73 ∤ 7200` (since `7200 mod 73 = 46`).
+    ///
+    /// The covering-space morphism construction is structural per vault and
+    /// depends on M_Fib infrastructure (FSM-PRIME) outside dccms.
     pub fn t4_long_count_covers_calendar_round() -> TheoremResult {
-        // Arithmetic: 1,872,000 / 18,980 is NOT an integer.
-        if LONG_COUNT_13_BAKTUN % CALENDAR_ROUND == 0 {
-            return TheoremResult::Fail {
-                reason: "Long Count IS an exact multiple of CR — not a covering".into()
-            };
-        }
-        // The ratio is ~98.63 — non-integer means fiber bundle, not multiple.
-        // The covering-space MORPHISM construction is structural per vault
-        // and depends on M_Fib infrastructure (FSM-PRIME) outside dccms.
+        // (a) Long Count = 13 · Baktun.
         if LONG_COUNT_13_BAKTUN != 13 * BAKTUN {
             return TheoremResult::Fail { reason: "Long Count != 13·Baktun".into() };
         }
+        // (b) Reduce the ratio exactly: 1,872,000 / 18,980.
+        let num: u64 = LONG_COUNT_13_BAKTUN;   // 1,872,000
+        let den: u64 = CALENDAR_ROUND;         // 18,980
+        let g = gcd(num, den);
+        let reduced_num = num / g;             // 7,200
+        let reduced_den = den / g;             // 73
+        // Sanity: the reduction should yield 7200/73.
+        if reduced_num != 7_200 || reduced_den != 73 {
+            return TheoremResult::Fail {
+                reason: format!("expected 7200/73 after gcd reduction, got {}/{}",
+                    reduced_num, reduced_den)
+            };
+        }
+        // (c) Non-integrality: 73 ∤ 7,200.
+        let remainder = reduced_num % reduced_den;
+        if remainder == 0 {
+            return TheoremResult::Fail {
+                reason: format!("expected 73 ∤ 7200, but 7200 mod 73 = 0")
+            };
+        }
+        if remainder != 46 {
+            return TheoremResult::Fail {
+                reason: format!("expected 7200 mod 73 = 46, got {}", remainder)
+            };
+        }
+        let quotient = reduced_num / reduced_den;  // 98
+        if quotient != 98 {
+            return TheoremResult::Fail {
+                reason: format!("expected ⌊7200/73⌋ = 98, got {}", quotient)
+            };
+        }
+        // (d) Equivalent expression: 1,872,000 = (Long Count) and
+        //     CR · 98 + (gcd · 46) = 18,980 · 98 + 260 · 46 = LongCount.
+        let reconstructed = den * quotient + g * remainder;
+        if reconstructed != num {
+            return TheoremResult::Fail {
+                reason: format!("CRT reconstruction failed: {} != {}", reconstructed, num)
+            };
+        }
         TheoremResult::Conditional {
-            verified: "1,872,000 = 13·Baktun; ratio 1,872,000/18,980 ≈ 98.63 is non-integer".into(),
-            pending: "covering-space morphism Long Count → M_Fib requires FSM-PRIME infrastructure".into(),
+            verified: "1,872,000 = 13·Baktun; 1,872,000/18,980 = 7200/73 = 98 + 46/73; \
+                       73 ∤ 7200 (7200 mod 73 = 46), so the ratio is non-integral and \
+                       Long Count is a fiber bundle over CR, not a simple multiple"
+                .into(),
+            pending: "covering-space morphism Long Count → M_Fib requires FSM-PRIME \
+                      infrastructure (Lean 4 / Coq) outside dccms"
+                .into(),
         }
     }
 
@@ -315,9 +393,17 @@ pub mod theorems {
         TheoremResult::pass("Venus-Sun convergence: gcd=73, lcm=2920, regime=Tier-1 turbulent")
     }
 
-    /// **T7** — Astronomical missing channel: 11 ∉ {T_V, T_Ma, T_J, T_S, T_E, CR, T_tz, T_819, 365}.
+    /// **T7** — Astronomical missing channel: 11 ∉ {T_Me, T_V, T_Ma, T_J, T_S, T_E, CR, T_tz, T_819, 365}.
+    ///
+    /// **v0.8.0 extension:** the vault's published T7 set covers
+    /// `{T_V, T_Ma, T_J, T_S, T_E, CR, T_tz, T_819, T_h}`. Since the dccms
+    /// substrate exposes `MERCURY_SYNODIC = 116` (vault §C3 confirms
+    /// `116 mod 11 = 6 ≠ 0`), we extend the check to include Mercury.
+    /// This strengthens but does not contradict the vault claim.
     pub fn t7_eleven_astronomically_absent() -> TheoremResult {
+        use dresden_codex::MERCURY_SYNODIC;
         let periods = [
+            (MERCURY_SYNODIC, "T_Me"),    // v0.8.0 extension; vault §C3
             (VENUS_SYNODIC, "T_V"),
             (MARS_SYNODIC, "T_Ma"),
             (JUPITER_SYNODIC, "T_J"),
@@ -335,7 +421,10 @@ pub mod theorems {
                 };
             }
         }
-        TheoremResult::pass("11 ∤ {584,780,399,378,11960,18980,260,819,365}")
+        TheoremResult::pass(
+            "11 ∤ {116, 584, 780, 399, 378, 11960, 18980, 260, 819, 365} \
+             (T_Me added v0.8.0)"
+        )
     }
 
     /// **T8** — Saturn displacement = 2 · 11² (T-SHADOW-POWER).
@@ -405,6 +494,14 @@ pub mod validation {
         280 % 5 == 0 && 280 % 7 == 0  // 5 | 280 ∧ 7 | 280
             && 242 % 11 == 0 && 242 % (11 * 11) == 0  // 11 | 242 ∧ 11² | 242
     }
+    /// **V14** — verbatim from vault `The Dresden Codex.md` §VALIDATION IDENTITIES.
+    ///
+    /// **Note:** this predicate is strictly weaker than the one verified by
+    /// Theorem T2. The vault publishes V14 as the conjunction
+    /// `5 ∣ T ∧ 13 ∣ T ∧ 4 ∣ lcm(T, 365)`, which is implied by but not
+    /// equivalent to T2's full claim `lcm(T, 365) = 18,980`. Both
+    /// predicates produce minimum `T = 260` over `T < 365`, but the
+    /// stronger T2 predicate is verified by [`v14_strict`].
     pub fn v14() -> bool {
         // min{T < 365 : 5 ∣ T ∧ 13 ∣ T ∧ 4 ∣ lcm(T, 365)} = 260
         let mut min: Option<u64> = None;
@@ -416,10 +513,50 @@ pub mod validation {
         min == Some(260)
     }
 
-    /// All 14 validation identities together.
+    /// **V14_strict** — companion identity matching Theorem T2's full predicate.
+    ///
+    /// `min{T < 365 : (5∣T ∨ 7∣T ∨ 11∣T) ∧ 13∣T ∧ lcm(T, 365) = 18,980} = 260`.
+    ///
+    /// This is the predicate Theorem T2 actually proves: T must (i)
+    /// contain at least one S_R prime, (ii) contain the boundary prime 13,
+    /// and (iii) achieve `lcm(T, 365) = 18,980`. The vault's V14 checks
+    /// only the weaker `5∣T ∧ 13∣T ∧ 4∣lcm(T,365)` (which is consistent
+    /// with V14_strict but does not imply it: e.g., T = 52 = 2²·13
+    /// satisfies `lcm(52, 365) = 18,980` and `4∣18,980` but lacks any
+    /// S_R prime, so it would pass a naïve `lcm = 18,980` check yet fails
+    /// T2's full conjunctive predicate).
+    ///
+    /// Not part of the vault's V1-V14 list — added during v0.8.0 precision
+    /// hardening to remove predicate drift between V-tier identities and
+    /// the T-tier theorem.
+    pub fn v14_strict() -> bool {
+        // T2 condition (i): T contains at least one S_R prime.
+        let has_s_r = |t: u64| -> bool {
+            RAMANUJAN_S_R.iter().any(|&p| t % p == 0)
+        };
+        // T2 condition (ii): T contains the boundary prime 13.
+        let has_boundary = |t: u64| -> bool { t % 13 == 0 };
+        // T2 condition (iii): lcm(T, 365) = 18,980.
+        let conductor_18980 = |t: u64| -> bool { lcm(t, 365) == 18_980 };
+
+        let mut min: Option<u64> = None;
+        for t in 1u64..365 {
+            if has_s_r(t) && has_boundary(t) && conductor_18980(t) {
+                min = Some(min.map_or(t, |m| m.min(t)));
+            }
+        }
+        min == Some(260)
+    }
+
+    /// All 14 vault-published validation identities together.
     pub fn all() -> [bool; 14] {
         [v1(), v2(), v3(), v4(), v5(), v6(), v7(),
          v8(), v9(), v10(), v11(), v12(), v13(), v14()]
+    }
+
+    /// V14 plus the strict T2-aligned companion. Returns `(v14, v14_strict)`.
+    pub fn v14_full_alignment() -> (bool, bool) {
+        (v14(), v14_strict())
     }
 }
 
@@ -506,6 +643,16 @@ mod tests {
         assert!(validation::v12());
         assert!(validation::v13());
         assert!(validation::v14());
+    }
+
+    #[test]
+    fn v14_strict_matches_theorem_t2_predicate() {
+        // V14_strict checks T2's exact predicate (lcm = 18,980), not the
+        // weaker vault V14 conditions. Both produce min = 260.
+        assert!(validation::v14_strict());
+        let (weak, strict) = validation::v14_full_alignment();
+        assert!(weak, "V14 (weak / vault verbatim) failed");
+        assert!(strict, "V14_strict (T2-aligned) failed");
     }
 
     // ─────────────────────────────────────────────────────────────────

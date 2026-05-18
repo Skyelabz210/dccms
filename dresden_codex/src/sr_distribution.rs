@@ -19,9 +19,12 @@
 //!
 //! ## Status
 //!
-//! **Proven** by direct integer computation for all six bodies (see tests).
-//! The structural T10 claim (S_R completeness across Mars/Venus/Saturn)
-//! follows from the arithmetic.
+//! **Mechanically certified by direct integer computation** for all five
+//! bodies (Mars, Venus, Saturn, Jupiter, Mercury) — see tests. The
+//! structural T10 claim (S_R completeness across Mars + Venus + Saturn)
+//! follows from the arithmetic. The Rust tests are an arithmetic
+//! certificate suite, not a Lean/Coq formal proof; the latter exists
+//! upstream in the FSM-PRIME / TUDPBoundary infrastructure per the vault.
 //!
 //! Source: vault `The Dresden Codex.md` §THEOREMS T7-T10, §VALIDATION
 //! IDENTITIES V5-V7, and synthesis Appendix B items 3-7.
@@ -104,9 +107,15 @@ pub fn sr_content(n: u64) -> Vec<u64> {
 
 /// The T10 distribution table at the eclipse-table epoch.
 ///
-/// Returns all six bodies (Mars, Venus, Saturn — the headline T10 trio;
-/// Jupiter, Mercury — synthesis extensions confirming the completeness;
-/// the eclipse table itself for cross-reference).
+/// Returns five planetary bodies:
+///
+/// - Mars, Venus, Saturn — the headline T10 trio carrying `S_R = {5, 7, 11}`
+/// - Jupiter, Mercury — synthesis extensions confirming completeness
+///   (neither contributes any `S_R` content, so the headline trio is the
+///   minimal recovery set, not an arbitrary selection)
+///
+/// The eclipse table `T_E` itself is intentionally NOT a row: its
+/// "self-displacement" `T_E mod T_E = 0` is degenerate.
 pub fn t10_distribution_table() -> Vec<PlanetaryDisplacement> {
     let epoch = ECLIPSE_TABLE_DAYS;
     vec![

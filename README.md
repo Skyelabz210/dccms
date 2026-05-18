@@ -1,7 +1,7 @@
 # DCCMS — Dresden Codex Configuration Manifold Study
 
-**Version:** 0.8.0-dev (Tier 1 complete)
-**Tests:** 430 passing, 0 failing (359 dccms_atlas + 69 dresden_codex + 2 prime_hunt)
+**Version:** 0.8.0-dev (Tier 1 complete + precision hardening)
+**Tests:** 431 passing, 0 failing (360 dccms_atlas + 69 dresden_codex + 2 prime_hunt)
 **Author:** Anthony Diaz (Acid) — HackFate.us / Skyelabz210
 **Computational collaborator:** Claude (Anthropic)
 
@@ -94,8 +94,29 @@ Exact integers, no floats.
 | H5 | Prime 11 universal coordinate | SUPPORTED (Level-2/3+ theorem) |
 | Binding | Venus/Eclipse = Tzolk'in carry class | THEOREM (all 5 parts) |
 
-**v0.7.0-dev: H4 closed.** The visual transducer is built and mechanically
-verified — see [executioner_dag.md](executioner_dag.md). The new
+**v0.8.0-dev Tier 1: DPM-PRIME mechanized arithmetic certificate suite.**
+The 10-theorem stack from `The Dresden Codex.md` is rendered as
+`cargo test`-decidable Rust assertions in [`dccms_atlas::dpm_prime`](dccms_atlas/src/dpm_prime.rs):
+9 theorems certified by direct integer computation, 1 theorem (T4: Long
+Count = covering space of Calendar Round) returns Conditional pending
+the FSM-PRIME `M_Fib` covering-morphism construction. All 14 published
+validation identities (V1–V14) pass; one extension (V14_strict) added
+during v0.8.0 precision hardening to align V14 with Theorem T2's
+exact predicate. **This is an arithmetic certificate suite, not a
+Lean/Coq formal proof artifact** — the latter exists upstream in the
+vault's `TUDPBoundary.lean` and FSM-PRIME infrastructure. Companion
+module [`dresden_codex::sr_distribution`](dresden_codex/src/sr_distribution.rs)
+exposes the planetary-displacement table (Mars, Venus, Saturn, Jupiter,
+Mercury) and the `t10_s_r_union` predicate. New constants in
+[`dresden_codex`](dresden_codex/src/lib.rs): `JUPITER_SYNODIC=399`,
+`SATURN_SYNODIC=378`, `MERCURY_SYNODIC=116`, `MARS_SYNODIC=780`,
+`CYCLE_819`, `ECLIPSE_TABLE_DAYS=11_960`, `ECLIPSE_CORRECTION=93`,
+`EPOCH_33_YEAR=12_053`, `VENUS_HAAB_LCM=2_920`,
+`LONG_COUNT_13_BAKTUN=1_872_000`, `LUNAR_NODAL=6_793`,
+`RAMANUJAN_S_R=[5,7,11]`.
+
+**v0.7.0-dev: H4 closed.** The visual transducer is built — see
+[executioner_dag.md](executioner_dag.md). The new
 `h4_visual` module (10 files, 50+ tests) provides:
 
 - A `GlyphAlphabet<const K: usize>` trait with implementors for
