@@ -106,3 +106,154 @@ H4 closure does not depend on SEG. The Object contract firewall isolates pixel p
 
 ### Milestone
 - **H4 hypothesis: PARTIAL → SUPPORTED.** Version bumped 0.6.0 → 0.7.0-dev.
+
+---
+
+# v0.8.0 Tier 2 — Phase B-7 (Operator-Fabric Refactor) — DAG
+
+**Session:** 2026-05-18
+**Skill:** executioner
+**Blueprint:** [docs/v0_8_0_B7_PLAN.md](docs/v0_8_0_B7_PLAN.md)
+**Manifest state at start:** v0.8.0-dev (Tier 1 + precision hardening), 431 tests, HEAD f17382a
+**Working decision-set (operating answers to the 5 open questions in plan §9):**
+
+- **D-1:** drop `phi_approximation` entirely (cleanest; preserves no float drift).
+- **D-3:** dccms modern Mayan orthography is canonical. Engine constants re-export `dayname::ALL_DAY_NAMES` rather than introducing a parallel spelling set.
+- **D-5:** `PISANO_MAX_MODULUS = 100_000`.
+- **Scope:** B-7.0 (foundation) + B-7.1 (Vigesimal) + B-7.2 (Tzolkin) in this commit. LongCount / Dresden / Venus / Fabric defer.
+- **`pisano_profile` shape:** `Vec<(u64, u64, u64)>` — `(modulus, pisano_period, distinct_count)`. No float ratio at the API boundary.
+
+If any of these decisions need revision, the user can override before the post-execution commit lands.
+
+## Nodes
+
+### NODE-B7-01 — `engines/` directory + `mod.rs` scaffolding
+- **Type:** SCAFFOLD
+- **Size:** XS
+- **Inputs:** none (greenfield)
+- **Output:** `dccms_atlas/src/engines/mod.rs`
+- **Gate:** file exists; declares the four submodules `lane`, `pisano`, `ramanujan`, `vigesimal`, `tzolkin`; module doc cites this DAG + plan
+- **Float check:** N/A (no arithmetic)
+- **Status:** PENDING
+
+### NODE-B7-02 — `engines/lane.rs` — Lane + MayaState
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** M
+- **Inputs:** `dresden_codex::SAFE_BASIS` for the adapter
+- **Output:** `dccms_atlas/src/engines/lane.rs`
+- **Gate:** types defined per plan §4; 6 methods implemented; adapters to `[u64; 6]` round-trip for canonical Safe Basis; G1-G6 pass; ≥ 10 unit tests
+- **Float check:** PASS (integer-only)
+- **CRAM check:** A1 PASS; no Garner here; no Div; no Sqr-on-lane-7
+- **Status:** PENDING — depends on B7-01
+
+### NODE-B7-03 — `engines/pisano.rs` — Pisano period + Fibonacci entry point
+- **Type:** IMPL + TEST
+- **Size:** S
+- **Inputs:** none
+- **Output:** `dccms_atlas/src/engines/pisano.rs`
+- **Gate:** `pisano_period(5) == 20` (foundational), `pisano_period(13) == 28`, `pisano_period(20) == 60`, `fibonacci_entry_point(13) == 7`, `fibonacci_entry_point(5) == 5`; error cases (m=0, m > PISANO_MAX_MODULUS) handled; ≥ 6 unit tests
+- **Float check:** PASS
+- **CRAM check:** A1 PASS
+- **Status:** PENDING — depends on B7-01
+
+### NODE-B7-04 — `engines/ramanujan.rs` — Ramanujan sum (exact integer)
+- **Type:** IMPL + TEST
+- **Size:** S
+- **Inputs:** none
+- **Output:** `dccms_atlas/src/engines/ramanujan.rs`
+- **Gate:** `c_q(n) = μ(q/gcd(q,n)) · φ(q) / φ(q/gcd(q,n))` formula correctly implemented; identities `c_1(n) == 1`, `c_q(0) == φ(q)`, for prime p: `c_p(n) == p-1 if p∤n else -1`; all return type `i64` (Ramanujan sums can be negative); ≥ 5 unit tests
+- **Float check:** PASS
+- **CRAM check:** A1 PASS
+- **Status:** PENDING — depends on B7-01
+
+### NODE-B7-05 — Wire `engines` into `lib.rs`
+- **Type:** WIRE
+- **Size:** XS
+- **Inputs:** B7-01..B7-04 outputs
+- **Output:** `dccms_atlas/src/lib.rs` edited (one line + re-exports)
+- **Gate:** `cargo build -p dccms_atlas --release` clean; no new warnings beyond pre-existing
+- **Float check:** N/A
+- **Status:** PENDING — depends on B7-02, B7-03, B7-04
+
+### NODE-B7-06 — `engines/vigesimal.rs` — Engine 1 (B-7.1)
+- **Type:** IMPL + TEST
+- **Size:** S
+- **Inputs:** B7-02 (MayaState, Lane), B7-03 (pisano)
+- **Output:** `dccms_atlas/src/engines/vigesimal.rs`
+- **Gate:** `Vigesimal::encode(v)` for v in 0..=19 produces a `MayaState` with two lanes `[QUAD_LANE, PENT_LANE]`; `decode` round-trips; `add/mul` lane-parallel mod 4 / mod 5; `fibonacci_orbit().len() == 60`; encoding rejects ≥ 20; ≥ 5 unit tests
+- **Float check:** PASS
+- **CRAM check:** A1 PASS; Lane 7 not used (Vigesimal lanes are 4 and 5) — A8 N/A
+- **Status:** PENDING — depends on B7-05
+
+### NODE-B7-07 — `engines/tzolkin.rs` — Engine 2 (B-7.2)
+- **Type:** IMPL + TEST
+- **Size:** S
+- **Inputs:** B7-02 (MayaState, Lane), B7-03 (pisano), `dccms_atlas::h4_visual::dayname::{DayNameGlyph, ALL_DAY_NAMES, from_ordinal}`
+- **Output:** `dccms_atlas/src/engines/tzolkin.rs`
+- **Gate:** `Tzolkin::new(tone, glyph_ord)` validates tone 1..=13 and glyph 0..=19; `from_day` and `to_day_number` round-trip for all 0..=259; `from_glyph(tone, glyph)` bridges `DayNameGlyph` cleanly; `display` uses canonical modern Mayan orthography (re-exports `DayNameGlyph`'s `Debug` rendering); 13×20=260 distinct days verified; `above_consciousness_threshold` is NOT present (D-2 omission); ≥ 6 unit tests
+- **Float check:** PASS
+- **CRAM check:** A1 PASS
+- **Status:** PENDING — depends on B7-05
+
+## Build order
+
+```
+B7-01 (scaffold)
+   ├── B7-02 (lane.rs)
+   ├── B7-03 (pisano.rs)
+   └── B7-04 (ramanujan.rs)
+        ↓
+   B7-05 (wire into lib.rs)
+        ↓
+   ├── B7-06 (vigesimal.rs)
+   └── B7-07 (tzolkin.rs)
+```
+
+B7-02 / B7-03 / B7-04 are independent within their tier but I'll execute serially in this session because parallel codex dispatch would create file-coordination overhead for files that share `engines/mod.rs`.
+
+
+## Execution results — B-7
+
+| Node | Output | LOC | Tests | A1 | Gate |
+|---|---|---:|---:|---|---|
+| B7-01 | `engines/mod.rs` | 60 | 0 | PASS | PASS |
+| B7-02 | `engines/lane.rs` | 308 | 14 | PASS | PASS |
+| B7-03 | `engines/pisano.rs` | 138 | 8 | PASS | PASS |
+| B7-04 | `engines/ramanujan.rs` | 158 | 7 | PASS | PASS |
+| B7-05 | `lib.rs` (wire) | +3 | — | N/A | PASS |
+| B7-06 | `engines/vigesimal.rs` | 219 | 9 | PASS | PASS |
+| B7-07 | `engines/tzolkin.rs` | 233 | 10 | PASS | PASS |
+
+**Workspace test count:** 431 → 479 (+48). 0 failing.
+**G2 float-check:** 0 real-arithmetic float references; 3 intentional doc-comment mentions explaining the no-float discipline.
+
+## Predicate-drift catch during execution
+
+One test failure surfaced during the integration gate — and it was in the **test**, not the code: `ramanujan_prime_split` had the case-split inverted in 3 of 4 assertions. The Möbius/totient formula correctly gives:
+
+- `p ∤ n  ⇒  c_p(n) = μ(p) · φ(p)/φ(p) = -1`
+- `p | n  ⇒  c_p(n) = μ(1) · φ(p)/φ(1) = p - 1`
+
+My initial test wrote it backwards. The implementation was correct; the formula in `ramanujan_sum` was confirmed against the three other identity tests (`c_q(0) = φ(q)`, `c_1(n) = 1`, `c_4` cases with square divisor). Test prose corrected; commit reflects the right formula. This is the second predicate-drift catch in the v0.8.0 line — the first was in v14_strict during precision hardening, this is the second in ramanujan_prime_split during B-7. Both surfaced before commit because of the deliberate testing discipline you set.
+
+## CHECKPOINT — 2026-05-18 (B-7 COMPLETE)
+
+### Completed this session
+| NODE | Status | Output |
+|---|---|---|
+| B7-01..B7-07 | PASS | `engines/` directory with 5 source files + tests |
+
+### Pending (Tier 2 remainder)
+- B-5: `dresden_codex::shadow_bond` detector (consumes engines vocabulary)
+- B-6: `prime_hunt::ramanujan_partition` boundary (depends on B-5)
+- B-7.3..B-7.6: deferred engines (LongCount, DresdenEclipse, VenusTable, MayaFabric)
+
+### Pending (Tier 3)
+- B-8 DKAM tier mapping
+- B-9 page_arithmetic
+- B-10 Maya-date API
+- B-11 Gini stratification verification
+- B-12 Goddess section extension to pages 13c-15
+
+### Milestone
+- **Type vocabulary stable.** `Lane` + `MayaState` + `pisano_period` + `fibonacci_entry_point` + `ramanujan_sum` available as foundation for B-5 and B-6. Two reference engines (Vigesimal, Tzolkin) verify the vocabulary works end-to-end; Tzolkin bridges to existing `dayname.rs` without regression.
