@@ -129,6 +129,14 @@ pub mod engines;
 // ── v0.8.0-dev Tier 2 B-6 — Ramanujan-alignment bridge (shadow_bond × ramanujan_partition)
 pub mod ramanujan_alignment;
 
+// ── v0.8.0-dev Tier 3 — DKAM tier mapping, page arithmetic, Maya-date API,
+//                       Gini stratification, Goddess section extension
+pub mod dkam_tier;
+pub mod page_arithmetic;
+pub mod maya_date;
+pub mod gini_stratification;
+pub mod goddess_extension;
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════

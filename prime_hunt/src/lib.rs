@@ -4,6 +4,7 @@
 #![deny(clippy::float_arithmetic)]
 
 pub mod ramanujan_partition;
+pub mod prime_gap_analysis;
 
 /// Sieve of Eratosthenes up to limit. Returns sorted list of primes.
 pub fn sieve(limit: usize) -> Vec<u64> {
