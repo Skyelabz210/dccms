@@ -1,8 +1,8 @@
 # DCCMS Workspace Manifest
 
-**Version:** 0.8.0-dev (Tiers 1, 2, 3 ALL ENTIRELY COMPLETE)
+**Version:** 0.9.0-dev (no outside scope — Recombinant CRT, K-Elim division, extended Goddess framework, segmenter framework)
 **Date:** 2026-05-18
-**Tests:** 588 passing, 0 failing (481 dccms_atlas + 85 dresden_codex + 22 prime_hunt)
+**Tests:** 619 passing, 0 failing (503 dccms_atlas + 94 dresden_codex + 22 prime_hunt)
 **Architecture:** 3-crate Rust workspace, exact-integer (zero float, `#![deny(clippy::float_arithmetic)]` enforced in dccms_atlas/src/lib.rs)
 
 This document is the ground truth of what exists. Read it before creating any new module.

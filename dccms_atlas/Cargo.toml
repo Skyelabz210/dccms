@@ -1,6 +1,6 @@
 [package]
 name = "dccms_atlas"
-version = "0.8.0-dev"
+version = "0.9.0-dev"
 edition = "2021"
 authors = ["Acid"]
 description = "Dresden Codex Configuration Manifold Study — query layer on the QMNF substrate"

@@ -137,6 +137,10 @@ pub mod maya_date;
 pub mod gini_stratification;
 pub mod goddess_extension;
 
+// ── v0.9.0-dev "no outside scope" — convert former "out of scope" to build targets
+pub mod extended_goddess;  // C-3: framework consumes glyph specs for pages 13c-15
+pub mod segmenter;         // C-4: pixel-ingestion framework (image/bbox/segmenter/classifier)
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════
@@ -197,7 +201,7 @@ pub const H4_INSTRUMENT_COUNT: usize = 6;
 // Project version
 // ═══════════════════════════════════════════════════════════════════
 
-pub const DCCMS_VERSION: &str = "0.8.0-dev";
+pub const DCCMS_VERSION: &str = "0.9.0-dev";
 pub const DCCMS_DECLARATION_DATE: &str = "2026-05-16";
 
 #[cfg(test)]

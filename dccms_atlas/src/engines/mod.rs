@@ -61,6 +61,7 @@ pub mod long_count;       // B-7.3
 pub mod dresden_eclipse;  // B-7.4
 pub mod venus_table;      // B-7.5
 pub mod fabric;           // B-7.6 — unifies all five engines
+pub mod recombinant;      // C-1 — winding-preserving residue arithmetic
 
 pub use lane::{Lane, MayaState, MayaStateError};
 pub use pisano::{
@@ -74,6 +75,7 @@ pub use long_count::{LongCount, PeriodEnding};
 pub use dresden_eclipse::DresdenEclipse;
 pub use venus_table::{VenusTable, VenusStation};
 pub use fabric::{MayaFabric, FabricAlignment};
+pub use recombinant::{RecombinantState, RecombinantError};
 
 #[cfg(test)]
 mod shadow_bond_consumption {

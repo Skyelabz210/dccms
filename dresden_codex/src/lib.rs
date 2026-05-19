@@ -46,6 +46,7 @@
 
 pub mod sr_distribution;
 pub mod shadow_bond;
+pub mod k_elim_divide;
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Constants
