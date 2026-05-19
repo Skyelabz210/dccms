@@ -660,6 +660,41 @@ mod tests {
     // ─────────────────────────────────────────────────────────────────
 
     #[test]
+    fn t3_819_ramanujan_carrying_gloss_is_weaker_than_structural_claim() {
+        // T3/819 tension recorded during B-6 execution.
+        //
+        // DPM-PRIME Theorem T3 asserts that 819 = 3² · 7 · 13 is the
+        // minimum (stability_floor² · last-S_R · boundary) STRUCTURAL
+        // PRODUCT. This claim is mechanized in `theorem_t3_passes` (above)
+        // and continues to pass unchanged: 819 is the smallest integer
+        // simultaneously divisible by 9, 7, and 13.
+        //
+        // The vault's prose around T3 occasionally glosses 819 as
+        // "Ramanujan-carrying" via the 7 ∈ S_R = {5, 7, 11} factor.
+        // Maya CRT twp-0001 Discovery 3 (mechanized in
+        // prime_hunt::ramanujan_partition::composite_supports_congruence)
+        // shows this gloss is WEAKER than it suggests: 819 has NO
+        // composite Ramanujan congruence, because its prime factor 13
+        // lacks a first-order congruence (Ahlgren-Ono boundary).
+        //
+        // Both facts coexist:
+        //   - T3 (structural product): 819 = minimal stability·last-S_R·boundary
+        //   - Discovery 3 (Ramanujan-carrying): 819 fails composite congruence
+        //
+        // This test documents the distinction explicitly so the gloss
+        // doesn't drift into a stronger claim than the math supports.
+        use prime_hunt::ramanujan_partition::composite_supports_congruence;
+        assert!(!composite_supports_congruence(819),
+            "819 must NOT support a Ramanujan congruence (its factor 13 \
+             has no first-order congruence). T3's STRUCTURAL claim stands; \
+             the Ramanujan-carrying gloss is documented here as weaker.");
+        // T3 still passes:
+        let t3 = theorems::t3_819_three_tier();
+        assert!(t3.is_pass(),
+            "T3 structural-product claim continues to hold unchanged");
+    }
+
+    #[test]
     fn full_stack_nine_pass_one_conditional() {
         let results = run_full_stack();
         assert_eq!(results.len(), 10);

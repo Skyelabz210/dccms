@@ -385,3 +385,121 @@ This is the third predicate-drift catch in the v0.8.0 line. Each one is a real s
   refinement of T10 S_R distribution is documented in code. B-6 can now
   consume this vocabulary to formalize the `{5, 7, 11}` coverage / exclusion
   structure cleanly.
+
+---
+
+# v0.8.0 Tier 2 — Phase B-6 (Ramanujan-Partition Boundary) — DAG
+
+**Session:** 2026-05-18
+**Skill:** executioner
+**Source:** vault `Maya CRT twp-0001.md` per synthesis §3.11
+**Manifest state at start:** v0.8.0-dev Tier 2 B-5 complete, 497 tests, HEAD 393423b
+
+## Three discoveries from Maya CRT twp-0001
+
+- **D1**: First-order Ramanujan congruences `p(ℓn+δ) ≡ 0 (mod ℓ)` exist exclusively for `ℓ ∈ {5, 7, 11}`, with `δ` given by `24δ ≡ 1 (mod ℓ)` → (5,4), (7,5), (11,6). Theorem; we mechanize the decision procedure.
+- **D2**: Prime gap doubling at boundary (~2.20 → 4.40 at ℓ > 11). Measured; **deferred** to Tier 3.
+- **D3**: Composite CRT decision — `p(Nn+δ) ≡ 0 (mod N)` for composite N iff all prime factors are in {5,7,11}. Load-bearing; mechanized.
+
+## Adaptation decisions
+
+- D-1: pure logic in `prime_hunt` (no new deps), bridge in `dccms_atlas`
+- D-2: bridge `is_ramanujan_aligned(bond)` in `dccms_atlas::ramanujan_alignment`
+- D-3: `partition_count(n) -> u128` via Euler pentagonal-number recurrence
+- D-4: trial-division factorization for `composite_supports_congruence`
+- D-5: explicit T3/819 tension encoded — composite_supports_congruence(819) returns false
+
+## Nodes
+
+### NODE-B6-01 — `prime_hunt/src/ramanujan_partition.rs`
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** S
+- **Inputs:** none
+- **Output:** new `prime_hunt/src/ramanujan_partition.rs`
+- **Gate:** `first_order_congruence(5) == Some(4)`, `(7) == Some(5)`, `(11) == Some(6)`; returns `None` for {2,3,13,17,19,23,29,31,37,41,43,73}; `partition_count(n)` matches OEIS A000041 for n in 0..=20; `verify_first_order_for_small_n(ell, 20)` true for ell in {5,7,11}; `composite_supports_congruence` correct for {35, 55, 77, 385, 819, 91, 65}; ≥ 12 unit tests
+- **Float check:** PASS
+- **CRAM check:** A1 PASS; no Garner; no shadow lane in computation
+- **Status:** PENDING
+
+### NODE-B6-02 — wire ramanujan_partition into `prime_hunt/src/lib.rs`
+- **Type:** WIRE
+- **Size:** XS
+- **Output:** `prime_hunt/src/lib.rs` edited
+- **Gate:** module accessible as `prime_hunt::ramanujan_partition::*`
+- **Status:** PENDING
+
+### NODE-B6-03 — `dccms_atlas/src/ramanujan_alignment.rs` (bridge)
+- **Type:** IMPL + TEST
+- **Size:** XS
+- **Inputs:** `dresden_codex::shadow_bond::ShadowBond`, `prime_hunt::ramanujan_partition::first_order_congruence`
+- **Output:** new `dccms_atlas/src/ramanujan_alignment.rs` + wire into lib.rs
+- **Gate:** `is_ramanujan_aligned(bond)` true iff bond is `Standard`/`Deep` at a prime in {5,7,11}; Saturn-11 Deep bond is Ramanujan-aligned; Venus-5 and Venus-7 Standard bonds are Ramanujan-aligned; AnchorInPeriod/NoDisplacement/NoBond all return false; ≥ 4 unit tests
+- **Status:** PENDING
+
+### NODE-B6-04 — T3/819 tension test in dpm_prime
+- **Type:** TEST
+- **Size:** XS
+- **Inputs:** B6-01 (composite_supports_congruence), existing T3
+- **Output:** `dccms_atlas/src/dpm_prime.rs` edited (one extra test)
+- **Gate:** explicit test asserting `composite_supports_congruence(819) == false`, with doc-comment naming the synthesis-flagged tension; T3's structural-product claim continues to pass unchanged; the test documents that "Ramanujan-carrying" gloss is weaker than T3 prose suggests
+- **Status:** PENDING — depends on B6-01
+
+## Build order
+
+```
+B6-01 (ramanujan_partition.rs)
+   ↓
+B6-02 (wire into prime_hunt) ── B6-03 (bridge in dccms_atlas) ── B6-04 (T3/819 tension)
+```
+
+
+## Execution results — B-6
+
+| Node | Output | LOC | Tests | A1 | Gate |
+|---|---|---:|---:|---|---|
+| B6-01 | `prime_hunt/ramanujan_partition.rs` | 290 | 15 | PASS | PASS |
+| B6-02 | `prime_hunt/lib.rs` wire | +1 | — | N/A | PASS |
+| B6-03 | `dccms_atlas/ramanujan_alignment.rs` | 116 | 6 | PASS | PASS |
+| B6-04 | `dpm_prime.rs` T3/819 tension test | +30 | 1 | PASS | PASS |
+
+**Workspace test count:** 497 → 519 (+22). 0 failing **on first run** — no predicate drift this phase.
+
+**Notable:** B-6 was the first v0.8.0 phase to land green without a predicate-drift catch at the gate. Plausibly because the source (Maya CRT twp-0001 Discoveries 1+3) is **fully axiomatized** in the vault — the decision procedures map cleanly to integer code. Phases that caught predicate drift (v14_strict, ramanujan_prime_split, shadow_bond_view) involved framing-level distinctions between related but non-identical predicates. B-6's content is closer to pure decidable arithmetic.
+
+## CHECKPOINT — 2026-05-18 (B-6 COMPLETE)
+
+### Completed this session
+| NODE | Status | Output |
+|---|---|---|
+| B6-01..B6-04 | PASS | `prime_hunt::ramanujan_partition` + bridge + T3/819 tension test |
+
+### Pending (Tier 2 deferred)
+- B-7.3..B-7.6: LongCount, DresdenEclipse, VenusTable, MayaFabric engines
+
+### Pending (Tier 3)
+- B-8 DKAM tier mapping
+- B-9 page_arithmetic
+- B-10 Maya-date API
+- B-11 Gini stratification verification
+- B-12 Goddess section extension to pages 13c-15
+- Discovery 2 (prime gap doubling at boundary) — deferred from B-6
+
+### Milestone — Tier 2 complete
+
+**All three Tier 2 phases shipped per user-directed ordering B-7 → B-5 → B-6.**
+
+The operator-fabric vocabulary (B-7), the shadow-bond predicate (B-5),
+and the Ramanujan-partition boundary (B-6) are now stable, mechanized,
+and tested.
+
+T3/819 tension explicitly documented:
+- DPM-PRIME T3 structural claim (`819 = min · 3²·7·13`): unchanged, passing
+- Discovery 3 Ramanujan-carrying gloss: refuted by mechanized
+  `composite_supports_congruence(819) == false` (13 lacks first-order)
+
+Saturn-242 → typed `ShadowBond::Deep { 11, 2, 242 }` → Ramanujan-aligned
+(11 ∈ first-order). The headline T-SHADOW-POWER case is now a single
+classification across three independent vocabularies (T8 / shadow_bond /
+Ramanujan-aligned-deep).
+
+Workspace state: 519 tests, 0 failing, A1 enforced.

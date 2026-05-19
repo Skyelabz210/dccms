@@ -3,6 +3,8 @@
 #![forbid(unsafe_code)]
 #![deny(clippy::float_arithmetic)]
 
+pub mod ramanujan_partition;
+
 /// Sieve of Eratosthenes up to limit. Returns sorted list of primes.
 pub fn sieve(limit: usize) -> Vec<u64> {
     if limit < 2 { return Vec::new(); }

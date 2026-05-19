@@ -126,6 +126,9 @@ pub mod dpm_prime;
 // ── v0.8.0-dev Tier 2 B-7 — operator-fabric engines
 pub mod engines;
 
+// ── v0.8.0-dev Tier 2 B-6 — Ramanujan-alignment bridge (shadow_bond × ramanujan_partition)
+pub mod ramanujan_alignment;
+
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
 // ═══════════════════════════════════════════════════════════════════
