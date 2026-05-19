@@ -40,6 +40,10 @@
 
 pub mod null;
 pub mod threshold;
+pub mod closing;
+pub mod register;
+pub mod classify;
+pub mod comparison;
 
 #[cfg(feature = "slub")]
 pub mod slub;
