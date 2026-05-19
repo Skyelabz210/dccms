@@ -41,7 +41,7 @@
 
 use crate::heads::FourCalendarHydra;
 use crate::h3_mi::entropy_nbp;
-use dresden_codex::{cram_address, SAFE_BASIS, nullified_lanes};
+use dresden_codex::{cram_address, SAFE_BASIS};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Goddess section data (published, numerical)

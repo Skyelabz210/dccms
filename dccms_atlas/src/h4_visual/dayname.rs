@@ -210,5 +210,6 @@ mod tests {
     /// Eb (ordinal 11) is the unique non-trivial lane-11 zero of the
     /// Tzolk'in day-name cycle. Provided as a documented constant for
     /// downstream consumers (NODE-FO01).
+    #[allow(dead_code)]
     pub const LANE_11_ZERO_DAY: DayNameGlyph = DayNameGlyph::Eb;
 }

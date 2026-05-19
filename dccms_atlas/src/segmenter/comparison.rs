@@ -35,8 +35,11 @@
 
 #[cfg(feature = "slub")]
 use super::slub::{load_slub_page, SlubError};
+#[cfg(feature = "slub")]
 use super::Segmenter;
+#[cfg(feature = "slub")]
 use super::threshold::DarknessThresholdSegmenter;
+#[cfg(feature = "slub")]
 use super::register::RegisterAwareSegmenter;
 
 /// Vault-known WWII-water-damaged Förstemann pages (Dresden Codex).

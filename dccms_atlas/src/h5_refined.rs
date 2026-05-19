@@ -39,9 +39,8 @@
 #![allow(dead_code)]
 
 use crate::events::EventSet;
-use crate::heads::{FourCalendarHydra, HydraHead};
+use crate::heads::FourCalendarHydra;
 use crate::SHADOW_PRIME;
-use std::collections::HashMap;
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Triple K-Elimination for prime 11

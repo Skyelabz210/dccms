@@ -37,9 +37,9 @@
 use crate::events::EventSet;
 use crate::heads::{FourCalendarHydra, HydraHead};
 use crate::h3_mi::h3_mi_report;
-use crate::h1_stage8::{GeneratorApplication, SEED, ASTRO_PRIME};
+use crate::h1_stage8::{SEED, ASTRO_PRIME};
 use crate::dkam_filter::DkamFilter;
-use dresden_codex::{cram_address, nullified_lanes, active_lanes, SAFE_BASIS};
+use dresden_codex::{cram_address, nullified_lanes};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Enumerate generator-predicted cycles

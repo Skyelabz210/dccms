@@ -13,11 +13,9 @@
 
 #![allow(dead_code)]
 
-use crate::h1_stage8::{SEED, ASTRO_PRIME, reachable_periods};
+use crate::h1_stage8::reachable_periods;
 use crate::h5_level::k_elim_level;
-use crate::dkam_filter::DkamFilter;
-use crate::heads::{HydraHead, FourCalendarHydra};
-use dresden_codex::{cram_address, nullified_lanes, active_lanes, carry_bits, pack_carry_bits, SAFE_BASIS};
+use dresden_codex::{cram_address, nullified_lanes, active_lanes, carry_bits, pack_carry_bits};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Catalog entry

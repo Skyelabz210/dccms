@@ -18,7 +18,7 @@
 //! Everything is exact integer.
 
 use crate::atlas::ConfigAtlas;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 
 /// A geometric profile of the occupied address subspace.
 #[derive(Clone, Debug)]

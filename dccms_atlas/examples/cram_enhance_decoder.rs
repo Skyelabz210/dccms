@@ -5,12 +5,11 @@
 use dccms_atlas::venus_kernel::{
     venus_accumulated_states, fifth_operator_rhythm, shadow16_trajectory,
     carry_vector_sequence, kernel_lane_signatures, lane_carry_frequencies,
-    substrate_rhythm_all_lanes, VENUS_KERNEL, VENUS_SYNODIC, SAFE_BASIS,
     shadow16,
 };
 use dccms_atlas::substrate_roles::{
     verify_grand_synchronization, substrate_role_profiles,
-    SubstrateRole, VenusCramState, equipopulation_test,
+    SubstrateRole, VenusCramState,
 };
 
 fn main() {
@@ -107,7 +106,7 @@ fn main() {
             8   => "inferior-conj",
             _   => "?",
         };
-        let cv_str: String = cv.iter().map(|&c| format!("  {:>3} ", if c == 1 { "▓▓" } else { "·" })).collect();
+        let _cv_str: String = cv.iter().map(|&c| format!("  {:>3} ", if c == 1 { "▓▓" } else { "·" })).collect();
         println!("   {:>2}  | {} | {} (delta={})",
             step, cv.iter().map(|&c| format!("{:>5}", c)).collect::<Vec<_>>().join(" "), role, delta);
     }

@@ -69,7 +69,7 @@
 
 #![allow(dead_code)]
 
-use dresden_codex::{SAFE_BASIS, cram_address, nullified_lanes, active_lanes};
+use dresden_codex::{SAFE_BASIS, nullified_lanes};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Bilinear generator rule
@@ -317,7 +317,7 @@ pub fn reachable_periods(max_cycle: u64) -> Vec<(&'static str, u64, String)> {
         (7200, "7200"),
     ];
 
-    for &(mult, mlabel) in &multipliers {
+    for &(mult, _mlabel) in &multipliers {
         for &(base, blabel) in &bases {
             let c = mult.saturating_mul(base);
             if c <= max_cycle && c > 0 {

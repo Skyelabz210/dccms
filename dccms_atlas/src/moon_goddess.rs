@@ -63,8 +63,8 @@ use crate::h4_non_visual::GODDESS_SECTION_INTERVALS;
 use crate::h4_montgomery::{MontgomeryQuad, goddess_section_quads};
 use crate::h5_level::k_elim_level;
 use crate::h3_mi::entropy_nbp;
-use dresden_codex::{cram_address, nullified_lanes, active_lanes,
-                     carry_bits, pack_carry_bits, SAFE_BASIS, MultiPhaseSchema};
+use dresden_codex::{cram_address, nullified_lanes,
+                     carry_bits, pack_carry_bits};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Moon Goddess structural analysis

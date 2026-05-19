@@ -4,7 +4,6 @@
 //! cross-validation corpus, and H4 Montgomery Quotient Shadow.
 
 use dccms_atlas::heads::FourCalendarHydra;
-use dccms_atlas::events::EventSet;
 use dccms_atlas::h1_stage8::compute_h1_stage8;
 use dccms_atlas::h5_level::compute_h5_level_report;
 use dccms_atlas::cross_validation::compute_cross_validation;

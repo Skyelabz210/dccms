@@ -28,7 +28,7 @@
 
 #![allow(dead_code)]
 
-use crate::venus_kernel::{SAFE_BASIS, TRANSPORT_CORE, VENUS_SYNODIC,
+use crate::venus_kernel::{SAFE_BASIS, VENUS_SYNODIC,
                            shadow16, venus_accumulated_states, carry_vector};
 
 // ═══════════════════════════════════════════════════════════════════
@@ -285,7 +285,7 @@ pub struct VenusCramState {
 
 impl VenusCramState {
     pub fn at_day(day: u64) -> Self {
-        let cram = crate::lunar::all_section_profiles()
+        let _cram = crate::lunar::all_section_profiles()
             .into_iter().next()
             .map(|_| [0u64; 6]) // placeholder
             .unwrap_or([0u64; 6]);
@@ -304,7 +304,7 @@ impl VenusCramState {
         let recumbent = day % VENUS_SYNODIC;
 
         // Which kernel phase are we in?
-        let kernel_phase = (k584 * 4 + recumbent / (VENUS_SYNODIC / 4)) % 4;
+        let _kernel_phase = (k584 * 4 + recumbent / (VENUS_SYNODIC / 4)) % 4;
         // Actually use exact kernel phase
         let kernel_cumulative = [0u64, 236, 326, 576];
         let phase = kernel_cumulative.iter().position(|&kc| recumbent < kc + match kc {

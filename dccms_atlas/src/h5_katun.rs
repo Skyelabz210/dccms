@@ -44,8 +44,7 @@
 
 use crate::events::EventSet;
 use crate::heads::FourCalendarHydra;
-use crate::h5_refined::KElimHistogram;
-use crate::h5_level::{k_elim_level, THRESHOLD_11_3};
+use crate::h5_level::THRESHOLD_11_3;
 use crate::SHADOW_PRIME;
 
 // ═══════════════════════════════════════════════════════════════════

@@ -52,8 +52,7 @@
 #![allow(dead_code)]
 
 use crate::heads::{HydraHead, FourCalendarHydra};
-use std::collections::HashMap;
-use dresden_codex::{SAFE_BASIS, cram_address, nullified_lanes, active_lanes};
+use dresden_codex::{SAFE_BASIS, cram_address, nullified_lanes};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Carry-signature lattice
@@ -154,7 +153,7 @@ impl PhaseRule {
 /// Factor-split phases: divide the cycle by each prime factor in turn.
 /// Result is one phase per prime factor, summing to cycle.
 fn factor_split_phases(cycle: u64) -> Vec<u64> {
-    let mut factors = distinct_prime_factors(cycle);
+    let factors = distinct_prime_factors(cycle);
     if factors.is_empty() { return vec![cycle]; }
     // Assign one phase per factor: φ_i = cycle / (product of all other factors)
     let total_factor_product: u64 = factors.iter().product();

@@ -176,3 +176,28 @@ full suite: 532 passed, 0 failed
 - New module `src/paths.rs` — hard-coded data paths for this machine.
 - `examples/calibrate.rs` — four-job calibration tool (kept as the source of
   truth for the empirical values used elsewhere).
+
+## Addendum (v0.9.3-prep) — Page-15 zero-barrier diagnostic
+
+Job 5 added to `calibrate.rs` samples page 15 at the y-positions where
+page 16 found barriers. Per-row results:
+
+| y | page | red ≥ 164 + Δ ≥ 24 | max R | best R-G | best R-B |
+|---:|---|---:|---:|---:|---:|
+| 2520 | 16 | 778 (200‰) | 241 | 66 | 87 |
+| 2520 | 15 | 443 (114‰) | 240 | 62 | 86 |
+| 4900 | 15 |  123 ( 31‰) | 228 | 57 | 74 |
+| 7280 | 15 |   76 ( 19‰) | 218 | 58 | 75 |
+
+**Page 15's red ink is identical to page 16's** — same max R, same margins.
+The barriers ARE there. They're just **narrower** (114‰ ≪ 200‰
+calibrated threshold). This is a photographic-coverage variation, not a
+property of the page or the ink. Page 15 likely framed slightly
+differently in the SLUB capture.
+
+**Decision**: keep `row_fraction_per_mille = 200`. Lowering globally to
+catch page 15 would risk false-positive barriers on other pages. The
+v0.9.2 combined damage signal `slub_signals_damage` correctly classifies
+page 15 as content-bearing because `max_area = 10,386,194 ≫ 150,000`
+damage threshold — the per-band barrier-count slot is only consulted
+when the stats already indicate damage. Page 15 is corroborated.

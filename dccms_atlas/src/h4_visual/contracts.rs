@@ -16,7 +16,7 @@
 
 #![cfg(test)]
 
-use super::alphabet::{GlyphAlphabet, SemanticRole};
+use super::alphabet::GlyphAlphabet;
 use super::bardot::BarDotNumeral;
 use super::dayname::{DayNameGlyph, ALL_DAY_NAMES};
 use super::month::{MonthGlyph, ALL_MONTHS};

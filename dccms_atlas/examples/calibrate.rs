@@ -314,6 +314,58 @@ fn main() {
             n, rows.len(), bands.len(), span_str);
     }
 
+
+    // ── JOB 5: Page-15 zero-barrier diagnostic ──────────────────────────
+    // v0.9.2 calibrate Job 4 showed page 15 has 0 barriers despite being
+    // content-bearing (max area 10.4M). Hypothesis: red ink in this
+    // photograph is paler than the calibrated red_min=164. Sample page 15
+    // at the same y-positions where page 16 found barriers, report what
+    // the actual R/G/B values are.
+    println!();
+    println!(" [5] Page-15 zero-barrier diagnostic — sample at page-16 barrier y-positions");
+    let img15 = load_slub_page(&slub_path(15)).expect("decode page 15");
+    let img16 = load_slub_page(&slub_path(16)).expect("decode page 16");
+    // Page 16 barriers reported in v0.9.2: y ≈ 2500-2548, 4860-4940, 7200-7350.
+    // Pick three center rows.
+    let probe_ys: [u32; 3] = [2520, 4900, 7280];
+    println!("     row  | page | red R≥164,Δ≥24 | max R | best R-G | best R-B | conclusion");
+    println!("     -----+------+----------------+-------+----------+----------+------------");
+    for &y in &probe_ys {
+        for (label, img) in [("16", &img16), ("15", &img15)] {
+            if y >= img.height { continue; }
+            let bpp = img.bytes_per_pixel as usize;
+            let w = img.width as usize;
+            let mut red_at_calibrated: u32 = 0;
+            let mut max_r: u8 = 0;
+            let mut best_rg: i16 = i16::MIN;
+            let mut best_rb: i16 = i16::MIN;
+            for x in 0..img.width {
+                let off = ((y as usize) * w + (x as usize)) * bpp;
+                if off + 2 >= img.data.len() { continue; }
+                let r = img.data[off];
+                let g = img.data[off + 1];
+                let b = img.data[off + 2];
+                if r >= 164 && (r as i16 - g as i16) >= 24 && (r as i16 - b as i16) >= 24 {
+                    red_at_calibrated += 1;
+                }
+                if r > max_r { max_r = r; }
+                let rg = r as i16 - g as i16;
+                let rb = r as i16 - b as i16;
+                if r > 100 && rg > best_rg { best_rg = rg; }
+                if r > 100 && rb > best_rb { best_rb = rb; }
+            }
+            let fraction_per_mille = (red_at_calibrated as u64 * 1000) / (img.width as u64);
+            let passes = fraction_per_mille >= 200;
+            let conclusion = if passes { "PASS (barrier detected)" }
+                else if max_r < 164 { "fail: max R too low" }
+                else if best_rg < 24 { "fail: R-G margin too small" }
+                else if best_rb < 24 { "fail: R-B margin too small" }
+                else { "fail: row_fraction below 200‰" };
+            println!("     {:>4} |  {} | {:>9} ({:>3}‰) | {:>5} | {:>8} | {:>8} | {}",
+                y, label, red_at_calibrated, fraction_per_mille,
+                max_r, best_rg, best_rb, conclusion);
+        }
+    }
     println!();
     println!("══════════════════════════════════════════════════════════════════════");
 }

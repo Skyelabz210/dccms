@@ -687,3 +687,161 @@ Workspace final state:
 - Lean 4 / Coq formal proofs for the DPM-PRIME theorem stack — orthogonal artifact
 
 These are not deferred; they are external prerequisites for which the consumer code is already complete and waiting.
+
+---
+
+# v0.9.3 — "The Object diagram closes on real pixels" — DAG
+
+**Session:** 2026-05-19
+**Skill:** executioner
+**Manifest state at start:** v0.9.2-dev, 648 tests passing, HEAD 2498ef6
+**Thesis:** the segmenter ships, real imagery is on disk, the H4 visual transducer's contract closes in theory. The next step is making it close in practice — real pixels through segmenter through classifier through atlas, with the predicted-CRAM ↔ observed-CRAM equality as the gate.
+
+## Gaps surfaced by the analysis
+
+| # | Gap | Severity |
+|---|---|---|
+| G1 | WORKSPACE_MANIFEST.md stale (says v0.9.0-dev / 619 tests / segmenter absent) | HIGH — blocks future executioner passes |
+| G2 | PageContextClassifier ignores bbox content; no real glyph classification anywhere | HIGH — H4 closure unrealized on real pixels |
+| G3 | Segmenter and atlas live disconnected; pipeline page→bbox→glyph→CRAM does not exist | HIGH — load-bearing for stated mission |
+| G4 | compare_two_jpegs uses plain DarknessThresholdSegmenter; ClosingThresholdSegmenter exists, unused | MEDIUM |
+| G5 | Imagery only 13–24; vault damage list (2,4,28,34,38,71,72) outside coverage | MEDIUM |
+| G6 | 34 compiler warnings (unused imports throughout) | LOW |
+| G7 | Page 15 zero-barrier anomaly unresolved | LOW |
+| G8 | No forward-plan doc since v0.9.1 (reactive, not forward) | LOW |
+| G9 | No CHANGELOG.md | LOW |
+
+## Nodes
+
+### NODE-N01 — Refresh WORKSPACE_MANIFEST.md
+- **Type:** DOC
+- **Size:** XS
+- **Inputs:** README.md (commit 2498ef6), v0.9.2 findings, current Cargo.toml versions
+- **Output:** `WORKSPACE_MANIFEST.md` (replace, keep structure)
+- **Gate:** version line says 0.9.2-dev; test counts say 532 / 94 / 22 = 648; segmenter section lists 8 modules; paths module listed; open-infrastructure section reflects v0.9.3 work, not v0.7 work
+- **Float check:** N/A (doc)
+- **Status:** PENDING
+- **Closes:** G1
+
+### NODE-N02 — Write docs/v0_9_3_PLAN.md
+- **Type:** DOC
+- **Size:** XS
+- **Inputs:** this DAG section
+- **Output:** `docs/v0_9_3_PLAN.md`
+- **Gate:** doc exists; states v0.9.3 thesis; lists G2/G3 as load-bearing; sketches pipeline shape page → ImageBuffer → RegisterAwareSegmenter(ClosingThresholdSegmenter) → IconographicGlyphClassifier → PageLayout-verified CRAM addresses
+- **Float check:** N/A
+- **Status:** PENDING
+- **Closes:** G8
+
+### NODE-N03 — compare_two_jpegs switches to ClosingThresholdSegmenter
+- **Type:** IMPL+TEST
+- **Size:** S
+- **Inputs:** `segmenter::comparison`, `segmenter::closing::ClosingThresholdSegmenter`
+- **Output:** `segmenter/comparison.rs` (revised seg pick), updated tests with new stat ranges
+- **Gate:** comparison.rs uses ClosingThresholdSegmenter; updated tests pass; compare_slub_famsi example still shows 12/12 corroboration (or report which page if signature changes)
+- **Float check:** PASS (integer-only)
+- **CRAM check:** A1 PASS
+- **Status:** PENDING
+- **Closes:** G4
+
+### NODE-N04 — Warning cleanup pass
+- **Type:** CLEAN
+- **Size:** XS
+- **Inputs:** existing modules with 34 unused-import warnings
+- **Output:** files with `use` statements pruned; no behavior change
+- **Gate:** `cargo build --workspace --release --features dccms_atlas/slub` produces 0 unused-import warnings; full test suite still 648 passing
+- **Float check:** N/A
+- **Status:** PENDING
+- **Closes:** G6
+
+### NODE-N05 — IconographicGlyphClassifier
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** M
+- **Inputs:** `segmenter::{BoundingBox, GlyphClassifier, ImageBuffer}`, `h4_visual::iconographic::IconographicFigure`, `segmenter::register::RegisterAwareSegmenter` (for band layout)
+- **Output:** `segmenter/classify.rs` (new struct + impl; keep PageContextClassifier for compat)
+- **Gate:** new struct implements `GlyphClassifier<Glyph = IconographicFigure>`; classify() consults (bbox.area, bbox aspect ratio via integer cross-multiplication, bbox.y position within register band) → `Option<IconographicFigure>`; bbox-region pixel-darkness summary used as auxiliary feature; ≥ 6 unit tests on synthetic bboxes covering: figure-class size+position match → Some; numeral-block size → None; out-of-band position → None; aspect ratio outside [0.4, 2.5] → None
+- **Float check:** PASS (integer-only, aspect via cross-multiply)
+- **CRAM check:** A1 PASS; Object contract preserved (`Option<Glyph>`, not confidence vector)
+- **Status:** PENDING
+- **Closes:** G2 (first real classifier — full H4 closure on real pixels comes via N06+N08)
+
+### NODE-N06 — segmenter::pipeline module
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** M
+- **Inputs:** N03 (ClosingThresholdSegmenter via comparison upgrade), N05 (IconographicGlyphClassifier), `h4_visual::layout::{PageLayout, goddess_section_layout}`, `moon_goddess::MoonGoddessProfile`
+- **Output:** `segmenter/pipeline.rs` (new file) + wire into `segmenter/mod.rs`
+- **Gate:** new `decode_goddess_page(page: u8, img: &ImageBuffer) -> PageDecoding` returning typed struct {page, register_bands, figure_bboxes, classified_figure, predicted_cram, observed_evidence}; ≥ 4 unit tests on synthetic images
+- **Float check:** PASS
+- **CRAM check:** A1 PASS; Object contract preserved
+- **Status:** PENDING
+- **Closes:** G3 (the pipeline exists; running it on real imagery is N07)
+
+### NODE-N07 — examples/decode_goddess.rs
+- **Type:** EXAMPLE
+- **Size:** S
+- **Inputs:** N06 pipeline, `paths::slub_page`
+- **Output:** `dccms_atlas/examples/decode_goddess.rs` + Cargo.toml example registration (slub feature)
+- **Gate:** runs end-to-end on SLUB pages 13–24; prints per-page table: register bands, figure-class bboxes, classified figure, expected figure (from page-number lookup), CRAM addresses match? (yes/no); reports overall match rate
+- **Float check:** PASS
+- **Status:** PENDING
+
+### NODE-N08 — Verification harness pipeline ↔ MoonGoddessProfile
+- **Type:** TEST
+- **Size:** S
+- **Inputs:** N06 pipeline, `moon_goddess::MoonGoddessProfile::compute()`
+- **Output:** integration test in `pipeline.rs` (or `tests/` if more appropriate)
+- **Gate:** for each Goddess page 16–23, the pipeline's `predicted_cram` field matches `MoonGoddessProfile::page_cram_addresses()[i]` exactly (integer equality); test failure if any page disagrees
+- **Float check:** PASS (integer equality)
+- **CRAM check:** A1 PASS; this is the Discharge contract on real pixels
+- **Status:** PENDING
+
+### NODE-N09 — Page 15 zero-barrier diagnostic
+- **Type:** REPORT
+- **Size:** XS
+- **Inputs:** SLUB page 15 image, calibrated `RegisterAwareSegmenter` thresholds
+- **Output:** Job 5 added to `examples/calibrate.rs` printing per-row red-pixel count for page 15 vs page 16
+- **Gate:** report identifies whether (a) red ink is too pale to pass threshold (lower red_min would catch it), or (b) red ink is absent from this particular photograph, or (c) barriers are partial-width below row_fraction_per_mille=200
+- **Float check:** PASS
+- **Status:** PENDING
+- **Closes:** G7
+
+### NODE-N10 — CHANGELOG.md
+- **Type:** DOC
+- **Size:** XS
+- **Inputs:** README's version arc + git log
+- **Output:** `CHANGELOG.md`
+- **Gate:** Keep-a-Changelog format; one entry per version v0.1 through v0.9.2; each entry credits one major landmark
+- **Status:** PENDING
+- **Closes:** G9
+
+## Build order
+
+```
+Tier 0 (parallel-ready, independent docs/cleanup):
+  N01 — manifest refresh
+  N02 — v0.9.3 forward plan
+  N04 — warning cleanup
+  N09 — page 15 diagnostic
+  N10 — CHANGELOG initial
+
+Tier 1 (mechanical seg upgrade, unblocks no downstream node but cleans the path):
+  N03 — comparison → closing seg
+
+Tier 2 (load-bearing — first real classifier):
+  N05 — IconographicGlyphClassifier
+
+Tier 3 (sequential — pipeline + verification):
+  N06 — segmenter::pipeline module
+    │
+    ├─► N07 — examples/decode_goddess.rs
+    └─► N08 — verification harness pipeline ↔ MoonGoddessProfile
+```
+
+## Open questions to lock before Tier 2 (N05)
+
+- **Q1:** Should `IconographicGlyphClassifier` consult image pixels at all, or only bbox geometry? Default: bbox-geometry + bbox-mean-darkness as auxiliary scalar feature.
+- **Q2:** Discrete output: `IconographicFigure` directly, or richer enum `{Figure(IconographicFigure), GlyphBlock, Numeral, BarrierFragment, Unknown}`? Default: richer enum.
+- **Q3:** Per-band rule: figure-class bboxes hard-coded to upper band only? Default: yes, "figure-class only in band 0 of the segmented register output."
+
+If user wants to override any default, surface before executing N05. Otherwise proceed with the defaults.
+

@@ -73,7 +73,7 @@ fn main() {
 
     println!("  Configuration walk from 260 (6 steps):");
     let walk = dccms_atlas::h1_generator::configuration_walk(260, 6);
-    for (cycle, sig, label) in &walk {
+    for (_cycle, sig, label) in &walk {
         println!("    {} | carry_sig={:#08b}", label, sig.0);
     }
     println!();

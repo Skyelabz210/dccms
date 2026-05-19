@@ -32,7 +32,7 @@
 
 #![allow(dead_code)]
 
-use crate::{cram_address, SAFE_BASIS, M_SAFE};
+use crate::{cram_address, SAFE_BASIS};
 
 /// Result of a K-Elim division: the quotient's CRAM address.
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -35,7 +35,9 @@
 
 use super::lane::{Lane, MayaState, MayaStateError};
 use super::pisano::{fibonacci_mod_sequence, PisanoError};
-use crate::h4_visual::dayname::{DayNameGlyph, ALL_DAY_NAMES, from_ordinal};
+use crate::h4_visual::dayname::{DayNameGlyph, from_ordinal};
+#[cfg(test)]
+use crate::h4_visual::dayname::ALL_DAY_NAMES;
 
 /// Errors for Tzolkin operations.
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -278,8 +278,6 @@ pub fn single_head_lane_histogram(events: &EventSet, head: &HydraHead) -> LaneHi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::events::CodexEventKind;
-    use crate::events::CodexEvent;
 
     #[test]
     fn empty_histogram_is_uniform() {

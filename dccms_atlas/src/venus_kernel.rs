@@ -305,7 +305,7 @@ pub fn visual_entropy_by_winding_depth(events: &[u64], k_max: u64) -> Vec<(u64, 
             // = 10000 * c/n * (ln(n) - ln(c))
             // Integer approximation via: ln(x) = log2(x) * ln(2), log2 via bit shift
             let p_num = c;
-            let p_den = n;
+            let _p_den = n;
             // Scale: use fixed-point. entropy contribution ≈ 10000 * c/n * ln(n/c)
             // Use: ln(n/c) ≈ (n - c) * 2 / (n + c) (Padé approximant)
             let ratio_2 = (n - p_num) * 2 * 10000 / (n + p_num).max(1);

@@ -65,12 +65,8 @@
 
 use crate::lunar::*;
 use crate::h5_level::k_elim_level;
-use crate::events::{EventSet, CodexEvent, CodexEventKind};
-use crate::heads::FourCalendarHydra;
-use crate::h3_mi::entropy_nbp;
-use dresden_codex::{cram_address, nullified_lanes, active_lanes,
-                     carry_bits, pack_carry_bits, SAFE_BASIS,
-                     MultiPhaseSchema, VENUS_PHASES, VENUS_SYNODIC};
+use dresden_codex::{cram_address, active_lanes,
+                     carry_bits, pack_carry_bits, VENUS_PHASES, VENUS_SYNODIC};
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Venus Table
@@ -485,7 +481,7 @@ mod tests {
         // - Uses exactly 3 distinct primes from S₆ = {2,3,5,7,11,13}
         // - Activates exactly the Transport Core {3,7,11}
         // Verify: the other 3-prime products from S₆ don't have this property.
-        let s6: [u64; 6] = [2,3,5,7,11,13];
+        let _s6: [u64; 6] = [2,3,5,7,11,13];
         let tzolkin_active = active_lanes(260);
         assert_eq!(tzolkin_active, vec![3,7,11],
             "Tzolk'in activates exactly {{3,7,11}}");

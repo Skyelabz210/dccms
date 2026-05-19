@@ -301,7 +301,7 @@ pub fn manifold_geometry(atlas: &ConfigAtlas) -> ManifoldGeometry {
     // Start from first address, find farthest, BFS from there for diameter.
     let start = largest_component[0];
     let dists1 = bfs_distances(start, &comp_set);
-    let (&far1, &d1) = dists1.iter().max_by_key(|&(_, &d)| d).unwrap_or((&start, &0));
+    let (&far1, &_d1) = dists1.iter().max_by_key(|&(_, &d)| d).unwrap_or((&start, &0));
     let dists_far = bfs_distances(far1, &comp_set);
     let (&far2, &diameter) = dists_far.iter().max_by_key(|&(_, &d)| d).unwrap_or((&far1, &0));
 

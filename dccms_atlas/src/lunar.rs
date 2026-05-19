@@ -45,7 +45,7 @@
 #![allow(dead_code)]
 
 use dresden_codex::{cram_address, nullified_lanes, active_lanes,
-                     carry_bits, pack_carry_bits, SAFE_BASIS};
+                     carry_bits, pack_carry_bits};
 use crate::h5_level::k_elim_level;
 
 // ═══════════════════════════════════════════════════════════════════

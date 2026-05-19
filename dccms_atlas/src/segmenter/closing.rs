@@ -11,8 +11,7 @@
 #![allow(dead_code)]
 
 use super::{BoundingBox, ImageBuffer, Segmenter};
-use super::threshold::{DarknessThresholdSegmenter, DEFAULT_DARKNESS_THRESHOLD_SUM,
-                       DEFAULT_MIN_AREA, DEFAULT_MAX_AREA};
+use super::threshold::DarknessThresholdSegmenter;
 use std::collections::VecDeque;
 
 /// Closing-then-connected-components segmenter.
@@ -152,7 +151,7 @@ impl ClosingThresholdSegmenter {
                     if x > max_x { max_x = x; }
                     if y < min_y { min_y = y; }
                     if y > max_y { max_y = y; }
-                    let mut try_push = |nx: i64, ny: i64, q: &mut VecDeque<(usize, usize)>,
+                    let try_push = |nx: i64, ny: i64, q: &mut VecDeque<(usize, usize)>,
                                        visited: &mut [bool]| {
                         if nx < 0 || ny < 0 { return; }
                         let nx = nx as usize;

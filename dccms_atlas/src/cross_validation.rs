@@ -46,9 +46,7 @@ use crate::events::{EventSet, CodexEvent, CodexEventKind};
 use crate::heads::{FourCalendarHydra, HydraHead, saturn_11_squared_head,
                    temperaments_4fold_head, eclipse_alternation_head};
 use crate::h3_mi::h3_mi_report;
-use crate::h5_level::k_elim_level;
 use crate::SHADOW_PRIME;
-use std::collections::HashMap;
 
 // ═══════════════════════════════════════════════════════════════════
 // §1  Saros eclipse corpus
