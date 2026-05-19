@@ -503,3 +503,68 @@ classification across three independent vocabularies (T8 / shadow_bond /
 Ramanujan-aligned-deep).
 
 Workspace state: 519 tests, 0 failing, A1 enforced.
+
+---
+
+# v0.8.0 Tier 2 — Phase B-7 COMPLETION — DAG
+
+**Session:** 2026-05-18
+**Per user directive:** plan completely, complete entirely (no further deferral).
+**Plan:** [docs/v0_8_0_B7_COMPLETION_PLAN.md](docs/v0_8_0_B7_COMPLETION_PLAN.md)
+
+## Execution results
+
+| Node | Output | LOC | Tests | A1 | Gate |
+|---|---|---:|---:|---|---|
+| B7.3 | `engines/long_count.rs` | 230 | 12 | PASS | PASS |
+| B7.4 | `engines/dresden_eclipse.rs` | 196 | 8 | PASS | PASS |
+| B7.5 | `engines/venus_table.rs` | 240 | 9 | PASS | PASS |
+| B7.6 | `engines/fabric.rs` | 165 | 7 | PASS | PASS |
+| WIRE | `engines/mod.rs` updated | +12 | — | N/A | PASS |
+
+**Workspace test count:** 519 → 555 (+36). 0 failing on first run. No predicate drift this phase — second consecutive clean landing.
+
+## Adaptation decisions enforced (per plan)
+
+- D-1 (re-affirmed): `VenusTable::phi_approximation` dropped entirely. The 8/5 sync claim is preserved via `find_sync() = (5, 8, 2920)`.
+- D-6: `DresdenEclipse::tzolkin_at_eclipse` no longer takes the unused `eclipse_number` parameter. Function is the identity on MayaState (Tzolk'in is invariant across eclipse periods because PERIOD mod 13 = 0 and mod 20 = 0).
+- Typed enums replace stringly-typed returns throughout: `PeriodEnding`, `VenusStation`.
+- LongCount uses `u8` for cyclic-lane fields (each bounded < 20) — type-level bound, no defensive runtime checks needed inside `to_days`.
+- LongCount's mod-18 uinal anomaly is documented and tested via `cyclic_state_has_four_lanes_with_anomalous_uinal`.
+
+## Honest commensuration reporting
+
+`DresdenEclipse::verify_commensuration()` returns:
+- Tzolk'in (260): divides ✓
+- Sacred 13: divides ✓
+- Uinal (20): divides ✓
+- **Haab (365): does NOT divide** (remainder 280)
+- **Venus synodic (584): does NOT divide** (remainder 280)
+
+Vault Decoded.md itself catches the Haab non-divisibility with "Correction: 11,960 mod 365 ≠ 0." Our report doesn't inflate any claim; the test `verify_commensuration_honest_about_haab_and_venus` enforces this directly.
+
+## CHECKPOINT — 2026-05-18 (B-7 ENTIRELY COMPLETE)
+
+### Completed across two sessions
+| Phase | Status | Tests | Output |
+|---|---|---:|---|
+| B-7.0 | PASS | 14 | `engines/lane.rs` (Lane + MayaState) |
+| B-7.1 helpers | PASS | 15 | `engines/pisano.rs` + `engines/ramanujan.rs` |
+| B-7.1 engine | PASS | 9 | `engines/vigesimal.rs` |
+| B-7.2 | PASS | 10 | `engines/tzolkin.rs` |
+| **B-7.3** | **PASS** | **12** | `engines/long_count.rs` |
+| **B-7.4** | **PASS** | **8** | `engines/dresden_eclipse.rs` |
+| **B-7.5** | **PASS** | **9** | `engines/venus_table.rs` |
+| **B-7.6** | **PASS** | **7** | `engines/fabric.rs` (unifies all five) |
+
+**All five Maya engines + MayaFabric mechanized.** Operator-fabric vocabulary is now complete per vault Mayas Engine.md specification, adapted for A1 / no-predicate-drift discipline.
+
+### Pending — Tier 3 (separate complete-plan-complete-execute cycle)
+- B-8 DKAM tier mapping
+- B-9 page_arithmetic (Page 8 jaguar; Page 52a red-barriers)
+- B-10 Maya-date API ergonomics
+- B-11 Gini stratification verification (verify before mechanize)
+- B-12 Goddess section extension to pages 13c-15
+- Discovery 2 (prime gap doubling at boundary)
+
+Tier 3 will follow the same discipline: comprehensive plan up front, execute the whole plan, no deferral.

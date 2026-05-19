@@ -57,6 +57,10 @@ pub mod pisano;
 pub mod ramanujan;
 pub mod vigesimal;
 pub mod tzolkin;
+pub mod long_count;       // B-7.3
+pub mod dresden_eclipse;  // B-7.4
+pub mod venus_table;      // B-7.5
+pub mod fabric;           // B-7.6 — unifies all five engines
 
 pub use lane::{Lane, MayaState, MayaStateError};
 pub use pisano::{
@@ -66,6 +70,10 @@ pub use pisano::{
 pub use ramanujan::{euler_totient, mobius, ramanujan_sum};
 pub use vigesimal::{Vigesimal, VigesimalError};
 pub use tzolkin::{Tzolkin, TzolkinError};
+pub use long_count::{LongCount, PeriodEnding};
+pub use dresden_eclipse::DresdenEclipse;
+pub use venus_table::{VenusTable, VenusStation};
+pub use fabric::{MayaFabric, FabricAlignment};
 
 #[cfg(test)]
 mod shadow_bond_consumption {
