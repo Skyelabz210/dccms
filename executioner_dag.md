@@ -845,3 +845,51 @@ Tier 3 (sequential — pipeline + verification):
 
 If user wants to override any default, surface before executing N05. Otherwise proceed with the defaults.
 
+---
+
+## CHECKPOINT — 2026-05-19 (v0.9.3 Tier 0 COMPLETE)
+
+### Completed this session
+| NODE | Status | Output | Closes |
+|---|---|---|---|
+| N01 | PASS | `WORKSPACE_MANIFEST.md` (refreshed to v0.9.2-dev / 648 tests / segmenter shipped) | G1 |
+| N02 | PASS | `docs/v0_9_3_PLAN.md` | G8 |
+| N04 | PASS | warning cleanup across 25 source files + 3 examples — `cargo check` and `cargo test` produce 0 warnings | G6 |
+| N09 | PASS | Job 5 added to `examples/calibrate.rs`; addendum in `docs/v0_9_2_findings.md` — page 15 anomaly diagnosed as photographic-coverage variation (narrow barriers, identical ink), no defaults change | G7 |
+| N10 | PASS | `CHANGELOG.md` with entries for v0.1 through v0.9.2 + Unreleased v0.9.3-dev | G9 |
+
+**Workspace test count:** 648 / 0 (unchanged — Tier 0 is discipline + documentation work).
+**Warnings:** 34 → 0.
+**HEAD:** `adbdbf2`.
+
+### Pending — Tier 1 (mechanical upgrade)
+- **N03** — `compare_two_jpegs` switches from `DarknessThresholdSegmenter` to `ClosingThresholdSegmenter`. Updates expected stats in tests. Single-session.
+
+### Pending — Tier 2 (load-bearing)
+- **N05** — `IconographicGlyphClassifier`. Three open Q1/Q2/Q3 defaults locked; ready to execute when session has budget. Single-session.
+
+### Pending — Tier 3 (sequential, may span sessions)
+- **N06** — `segmenter::pipeline` module
+- **N07** — `examples/decode_goddess.rs`
+- **N08** — verification harness pipeline ↔ `MoonGoddessProfile`
+
+### Files delivered this session
+- `WORKSPACE_MANIFEST.md` (replace)
+- `docs/v0_9_3_PLAN.md` (new)
+- `CHANGELOG.md` (new)
+- `executioner_dag.md` (this section + DAG section appended)
+- `docs/v0_9_2_findings.md` (page-15 addendum)
+- `examples/calibrate.rs` (Job 5 added)
+- 28 source files (unused imports / vars pruned, semantic preservations applied)
+
+### Decision point for Tier 1+
+
+The next session can land Tier 1 (N03, 30 min) + Tier 2 (N05, ~2 hours) without further user input — defaults Q1/Q2/Q3 are locked in the DAG. Tier 3 (N06-N08) is the real ship and may want fresh budget.
+
+If user wants to:
+- **Override defaults** — say so before N05 starts.
+- **Add scope** — extend SLUB download to pages outside 13-24 (G5 not yet closed), or build glyph classifiers beyond `IconographicFigure`.
+- **Pivot** — work on a different area (e.g. Lean 4 formalization, NS bridge integration).
+
+Surface preferences; otherwise execute Tier 1 + Tier 2 next session as the natural continuation.
+
