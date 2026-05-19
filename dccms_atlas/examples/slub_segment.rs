@@ -13,27 +13,12 @@
 
 #![cfg(feature = "slub")]
 
+use dccms_atlas::paths::slub_page as page_path;
 use dccms_atlas::segmenter::{
     slub::load_slub_page,
     threshold::DarknessThresholdSegmenter,
     Segmenter,
 };
-use std::path::PathBuf;
-
-fn home_dir() -> PathBuf {
-    let h = std::env::var("USERPROFILE")
-        .or_else(|_| std::env::var("HOME"))
-        .expect("home dir not set");
-    PathBuf::from(h)
-}
-
-fn page_path(page: u32) -> PathBuf {
-    home_dir()
-        .join("Agents")
-        .join("imports")
-        .join("slub_dresden")
-        .join(format!("page_{:08}.jpg", page))
-}
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

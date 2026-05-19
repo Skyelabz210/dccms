@@ -13,23 +13,12 @@
 //!
 //! Outputs to `~/Agents/imports/famsi_dresden/extracted/`.
 
+use dccms_atlas::paths::{famsi_pdf, famsi_extracted_dir};
 use std::fs;
-use std::path::PathBuf;
-
-fn home() -> PathBuf {
-    let h = std::env::var("USERPROFILE")
-        .or_else(|_| std::env::var("HOME"))
-        .expect("home dir");
-    PathBuf::from(h)
-}
 
 fn main() {
-    let pdf_path = home()
-        .join("Agents").join("imports").join("famsi_dresden")
-        .join("famsi_pp13-24.pdf");
-    let out_dir = home()
-        .join("Agents").join("imports").join("famsi_dresden")
-        .join("extracted");
+    let pdf_path = famsi_pdf();
+    let out_dir = famsi_extracted_dir();
     fs::create_dir_all(&out_dir).expect("mkdir");
 
     let bytes = fs::read(&pdf_path).expect("read FAMSI PDF");

@@ -40,11 +40,18 @@ pub struct RegisterAwareSegmenter<S: Segmenter> {
 
 impl<S: Segmenter> RegisterAwareSegmenter<S> {
     pub fn new(inner: S) -> Self {
+        // Defaults calibrated empirically on SLUB Dresden imagery
+        // (examples/calibrate.rs Job 1, sampled at page 16 row 7200):
+        //   median (R, G, B) of red-barrier pixels = (164, 140, 126)
+        //   min(R-G, R-B) = min(24, 38) = 24
+        // The barrier ink is a brownish/orange red, not pure crimson; the
+        // earlier (130, 40) defaults were synthetic and missed actual SLUB
+        // barriers entirely.
         Self {
             inner,
-            red_min: 130,
-            red_excess: 40,
-            row_fraction_per_mille: 500,  // > 50% of row must be red
+            red_min: 164,
+            red_excess: 24,
+            row_fraction_per_mille: 200,  // 20% — SLUB barriers are partial-width
         }
     }
 

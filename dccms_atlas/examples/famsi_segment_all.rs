@@ -8,26 +8,12 @@
 
 #![cfg(feature = "slub")]
 
+use dccms_atlas::paths::famsi_page as famsi_path;
 use dccms_atlas::segmenter::{
     slub::load_slub_page,  // works on any JPEG — function name is historical
     threshold::DarknessThresholdSegmenter,
     Segmenter,
 };
-use std::path::PathBuf;
-
-fn home_dir() -> PathBuf {
-    let h = std::env::var("USERPROFILE")
-        .or_else(|_| std::env::var("HOME"))
-        .expect("home dir");
-    PathBuf::from(h)
-}
-
-fn famsi_path(n: u32) -> PathBuf {
-    home_dir()
-        .join("Agents").join("imports").join("famsi_dresden")
-        .join("extracted")
-        .join(format!("page_{:02}.jpg", n))
-}
 
 fn main() {
     println!("══════════════════════════════════════════════════════════════════════");

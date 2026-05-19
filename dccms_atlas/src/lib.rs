@@ -140,6 +140,7 @@ pub mod goddess_extension;
 // ── v0.9.0-dev "no outside scope" — convert former "out of scope" to build targets
 pub mod extended_goddess;  // C-3: framework consumes glyph specs for pages 13c-15
 pub mod segmenter;         // C-4: pixel-ingestion framework (image/bbox/segmenter/classifier)
+pub mod paths;             // v0.9.2: hard-coded data paths for this machine
 
 // ═══════════════════════════════════════════════════════════════════
 // Re-exports — convenience for downstream consumers
