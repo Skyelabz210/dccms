@@ -8,8 +8,17 @@ description = "Dresden Codex Configuration Manifold Study — query layer on the
 [dependencies]
 dresden_codex   = { path = "../dresden_codex" }
 prime_hunt      = { path = "../prime_hunt" }
+# JPEG decoding for the SLUB Dresden adapter. Pure-Rust, jpeg-only feature
+# subset to keep compile time bounded and avoid native C dependencies.
+image           = { version = "0.25", default-features = false, features = ["jpeg"], optional = true }
 
 [features]
 default = []
 # Enable expensive atlas-build operations
 heavy   = []
+# Enable the SLUB Dresden JPEG adapter and connected-components segmenter.
+slub    = ["dep:image"]
+
+[[example]]
+name = "slub_segment"
+required-features = ["slub"]

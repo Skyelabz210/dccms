@@ -39,6 +39,10 @@
 #![allow(dead_code)]
 
 pub mod null;
+pub mod threshold;
+
+#[cfg(feature = "slub")]
+pub mod slub;
 
 /// An opaque byte-buffer image. Bytes are interpreted by the consumer
 /// (typically `bytes_per_pixel * width` per row, no padding).
