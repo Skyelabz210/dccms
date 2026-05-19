@@ -27,6 +27,7 @@ use dccms_atlas::paths::{slub_page as slub_path, famsi_page as famsi_path};
 use dccms_atlas::segmenter::{
     slub::load_slub_page,
     threshold::DarknessThresholdSegmenter,
+    closing::ClosingThresholdSegmenter,
     register::RegisterAwareSegmenter,
     ImageBuffer, Segmenter,
 };
@@ -366,6 +367,55 @@ fn main() {
                 max_r, best_rg, best_rb, conclusion);
         }
     }
+
+    // ── JOB 6: ClosingThresholdSegmenter per-page stats (N03 prep) ───────
+    // The cross-source comparison (compare_two_jpegs) uses the plain
+    // DarknessThresholdSegmenter. The closing segmenter eliminates the
+    // register-leak under-segmentation v0.9.1 documented. To switch
+    // compare_two_jpegs to closing without regressing 12/12 corroboration,
+    // we need the empirical damage threshold under closing.
+    println!();
+    println!(" [6] ClosingThresholdSegmenter per-page stats — N03 threshold recalibration");
+    let close_seg = ClosingThresholdSegmenter::default();
+    println!("     page | components | max area       | vault    | damage-like?");
+    println!("     -----+------------+----------------+----------+-------------");
+    let mut close_stats: Vec<(u32, usize, u64, bool)> = Vec::new();
+    for n in 13..=24 {
+        let path = slub_path(n);
+        if !path.exists() { continue; }
+        let img = load_slub_page(&path).expect("decode");
+        let bbs = close_seg.segment(&img);
+        let max = bbs.iter().map(|b| b.area()).max().unwrap_or(0);
+        let vault_damaged = n == 24;  // only WWII-damaged page in 13-24 set
+        close_stats.push((n, bbs.len(), max, vault_damaged));
+    }
+    // Print stats and find the boundary between damaged and intact.
+    let p24 = close_stats.iter().find(|(n,_,_,_)| *n == 24).copied();
+    let damaged_max = p24.map(|(_, _, m, _)| m).unwrap_or(0);
+    let intact_min_max = close_stats.iter()
+        .filter(|(n,_,_,_)| *n != 24)
+        .map(|(_, _, m, _)| *m)
+        .min().unwrap_or(0);
+    let damaged_comp = p24.map(|(_, c, _, _)| c).unwrap_or(0);
+    let intact_min_comp = close_stats.iter()
+        .filter(|(n,_,_,_)| *n != 24)
+        .map(|(_, c, _, _)| *c)
+        .min().unwrap_or(0);
+    for (n, comp, max, vault) in &close_stats {
+        let vault_label = if *vault { "DAMAGED " } else { "intact  " };
+        let damage_like = *comp < intact_min_comp && *max < intact_min_max;
+        let mark = if damage_like { "★ YES" } else { "no" };
+        println!("     {:>4} | {:>10} | {:>14} | {} | {}",
+            n, comp, max, vault_label, mark);
+    }
+    println!();
+    println!("     Page-24 (damaged): comp={}, max={}", damaged_comp, damaged_max);
+    println!("     Intact min:        comp={}, max={}", intact_min_comp, intact_min_max);
+    let recommended_max = (damaged_max + intact_min_max) / 2;
+    let recommended_comp = (damaged_comp + intact_min_comp) / 2;
+    println!("     Recommended closing-seg thresholds: comp < {}, max < {}",
+        recommended_comp, recommended_max);
+
     println!();
     println!("══════════════════════════════════════════════════════════════════════");
 }

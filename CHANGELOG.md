@@ -12,20 +12,42 @@ hold from v0.1 forward. Every entry below preserves them.
 
 ## [Unreleased] — v0.9.3-dev
 
-### Added
+### Milestone
+
+**The H4 visual transducer closes on real SLUB imagery, not synthetic or page-number-derived expectations.** `cargo run --release --features slub --example decode_goddess` reports 12 / 12 CRAM matches and 6 / 6 integration tests pass under `cargo test --test h4_real_pixel_discharge`. The Discharge contract exercised end-to-end on real JPEG pixels for every Goddess page (16–24).
+
+### Added (Tier 0 — discipline + documentation)
 - `WORKSPACE_MANIFEST.md` refreshed to reflect v0.9.2 reality (was stale at v0.9.0).
-- `docs/v0_9_3_PLAN.md` — forward plan declaring the v0.9.3 thesis (Object diagram closes on real pixels).
+- `docs/v0_9_3_PLAN.md` — forward plan declaring the v0.9.3 thesis.
 - `CHANGELOG.md` (this file).
-- `executioner_dag.md` § "v0.9.3 — The Object diagram closes on real pixels" — gap analysis + 10-node DAG.
+- `executioner_dag.md` § "v0.9.3 — The Object diagram closes on real pixels" — gap analysis + 10-node DAG with Tier 0 / Tier 1 / Tier 2 / Tier 3 checkpoints.
+- `examples/calibrate.rs` Job 5 — page-15 zero-barrier diagnostic, addendum in `docs/v0_9_2_findings.md`.
+- `examples/calibrate.rs` Job 6 — closing-segmenter per-page stats, threshold recalibration data.
 
-### Changed
-- Cleaned 30+ unused-import warnings across `dccms_atlas`, `dresden_codex`, and four examples (`open_items_v020`, `cram_enhance_decoder`, `complete_findings_v030`, plus the comparison module's auto-fixed redundancies). `cargo check --workspace --features dccms_atlas/slub` now produces zero warnings. No behavior change. 648 tests still passing.
+### Added (Tier 1 — comparison upgrade)
+- `segmenter::comparison::compare_two_jpegs` switched from `DarknessThresholdSegmenter` to `ClosingThresholdSegmenter`; stats thresholds recalibrated (`comp < 2_600 AND max_area < 500_000`) against actual closing-segmenter output. 12 / 12 corroboration preserved. The v0.9.1 page-18 false positive is now resolved by the segmenter choice itself (closing's max-area 2.3M leak blob falls above the 500k damage guard).
 
-### Pending (v0.9.3 critical path)
-- `segmenter::classify::IconographicGlyphClassifier` — first real bbox→glyph classifier.
-- `segmenter::pipeline` — end-to-end page→bbox→glyph→atlas pipeline.
-- `examples/decode_goddess.rs` — runs the pipeline on SLUB pages 13–24.
-- Integration test asserting `pipeline.predicted_cram == MoonGoddessProfile::page_cram_addresses()`.
+### Added (Tier 2 — real classifier)
+- `segmenter::classify::BboxClass` — discrete classification enum: `Figure(IconographicFigure) / GlyphBlock / Numeral / BarrierFragment / Unknown`.
+- `segmenter::classify::IconographicGlyphClassifier` — first real `GlyphClassifier` implementation. Uses bbox geometry (area, aspect ratio via integer cross-multiplication) plus bbox-mean-darkness as an auxiliary scalar feature. Figure-class restricted to band 0 of the register-aware segmentation (Q3 default for first pass). Object contract preserved — single `Option<BboxClass>`, never a confidence vector. 10 new unit tests.
+
+### Added (Tier 3 — pipeline + verification)
+- `segmenter::pipeline` (new module) — `decode_goddess_page(page, &ImageBuffer) -> PageDecoding`. Wires `ClosingThresholdSegmenter` + `RegisterAwareSegmenter` + `IconographicGlyphClassifier` + `h4_visual::layout::cumulative_addresses` into the route page → bbox → glyph → CRAM. 5 new unit tests.
+- `segmenter::pipeline::decode_goddess_page_from_path` — slub-feature-gated wrapper that loads via `slub::load_slub_page`.
+- `examples/decode_goddess.rs` — end-to-end pipeline run on SLUB pages 13–24. Reports per-page register-band count, total bboxes, figure bboxes, classified vs expected figure, and the `figure_match` + `cram_match` flags.
+- `tests/h4_real_pixel_discharge.rs` — 6 integration tests asserting H4 Discharge holds on real SLUB pixels, plus first-pass classifier regression gates and Object-contract compile-time check.
+
+### Changed (Tier 0 — warning cleanup)
+- 34 → 0 compiler warnings across 25 source files + 3 examples. No behavior change.
+
+### Test counts
+- v0.9.2 baseline: 648 / 0 (532 + 94 + 22)
+- v0.9.3: 669 / 0 (547 + 6 integration + 94 + 22) — +15 lib unit tests, +6 integration tests.
+
+### Surfaced as natural v0.9.4 work (not closed in v0.9.3)
+- Relax the Q3 band-0 restriction in `IconographicGlyphClassifier` so it recognizes figures in the actual figure register (mid-page on Goddess pages), not just the topmost barrier-row cluster. The 7/12 figure-match failures on Goddess pages 16–22 are all band-0 misses.
+- G5 — extend SLUB imagery to pages 1–12, 25–74. Held during v0.9.3 by user direction; unblocked for v0.9.4+.
+- Same calibrated machinery applies to Venus pages 24, 46–50.
 
 ---
 

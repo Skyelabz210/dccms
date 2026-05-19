@@ -44,6 +44,7 @@ pub mod closing;
 pub mod register;
 pub mod classify;
 pub mod comparison;
+pub mod pipeline;     // v0.9.3 N06: end-to-end page→bbox→glyph→CRAM verification
 
 #[cfg(feature = "slub")]
 pub mod slub;

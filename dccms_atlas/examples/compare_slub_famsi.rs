@@ -65,9 +65,10 @@ fn main() {
     println!();
     if disagreements.is_empty() {
         println!(" ★ Every page in 13-24 corroborates the vault.");
-        println!(" The v0.9.1 page-18 false positive is fixed: barriers detected");
-        println!(" at calibrated (red_min=164, red_excess=24) defaults break the");
-        println!(" stats-only tie with page 24 (0 barriers).");
+        println!(" Under v0.9.3 N03 the ClosingThresholdSegmenter resolves the");
+        println!(" v0.9.1 page-18 false positive by stats alone (max area 2.3M");
+        println!(" leak blob >> 500k damage guard); barrier-count is retained");
+        println!(" for defense in depth against future imagery variation.");
     } else {
         println!(" Segmenter ↔ vault disagreements ({} pages):", disagreements.len());
         for (n, vault, sig) in &disagreements {

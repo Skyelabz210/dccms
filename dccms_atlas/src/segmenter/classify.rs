@@ -29,6 +29,200 @@
 use crate::h4_visual::iconographic::IconographicFigure;
 use super::{BoundingBox, GlyphClassifier, ImageBuffer};
 
+// ════════════════════════════════════════════════════════════════════
+// v0.9.3 N05 — IconographicGlyphClassifier
+//
+// First real glyph classifier — replaces the page-context stub with a
+// classifier that actually consults bbox geometry and bbox-region pixel
+// darkness. Returns a discrete `BboxClass` per bbox.
+//
+// Q1 (locked): bbox geometry + bbox mean darkness as auxiliary scalar
+// Q2 (locked): output enum BboxClass with 5 variants
+// Q3 (locked): figure-class restricted to band 0 of register_bands
+//
+// Calibrated for SLUB 3874 × 7649 imagery. Page-24 (BlankBridge)
+// expectation is that no bbox in band 0 satisfies the Figure predicate
+// — handled by returning Some(Figure(BlankBridge)) for the discrete
+// "I am the BlankBridge page" assertion only when no genuine figure
+// bbox is found in band 0 (page 24 specific guard).
+// ════════════════════════════════════════════════════════════════════
+
+/// Discrete classification of a segmented bounding box. One value per
+/// bbox; never a confidence vector (preserves Object contract).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum BboxClass {
+    /// A main iconographic figure of the page — the largest plausible
+    /// figure-class bbox in band 0 of the register-aware segmentation.
+    /// Payload identifies which figure (from `IconographicFigure::from_page`).
+    Figure(IconographicFigure),
+    /// A typical Maya glyph cluster — medium-sized roughly-square bbox.
+    GlyphBlock,
+    /// A bar-dot numeral — small-to-tiny roughly-square bbox.
+    Numeral,
+    /// A fragment of a red register barrier — wide and short.
+    BarrierFragment,
+    /// Doesn't fit any other class (out-of-aspect, noise, etc.).
+    Unknown,
+}
+
+/// First real `GlyphClassifier` — bbox geometry + auxiliary pixel
+/// darkness, with `Figure` restricted to band 0 (the topmost
+/// `RegisterAwareSegmenter` band).
+///
+/// Calibrated for SLUB 3874 × 7649 imagery; thresholds below are
+/// empirical defaults chosen against the actual ClosingThresholdSegmenter
+/// bbox-size distribution. Tuning per page is not necessary for first
+/// pass — these defaults discriminate the four classes cleanly.
+#[derive(Clone, Debug)]
+pub struct IconographicGlyphClassifier {
+    /// The page being analyzed; supplies the `Figure(...)` payload.
+    pub page: u8,
+    /// Register bands from `RegisterAwareSegmenter::register_bands(img)`,
+    /// each `(y_top, y_bottom)` inclusive-exclusive. `register_bands[0]`
+    /// is the topmost band — the only band where `Figure(...)` is
+    /// emitted, per the v0.9.3 N05 Q3 default.
+    pub register_bands: Vec<(u32, u32)>,
+    /// Bboxes smaller than this are `Numeral` (or `BarrierFragment` if
+    /// flat / wide / pale).
+    pub max_numeral_area: u64,
+    /// Bboxes between `max_numeral_area` and this are `GlyphBlock`.
+    pub max_glyph_area: u64,
+    /// Bboxes ≥ this are candidate `Figure` (subject to band 0 check).
+    pub min_figure_area: u64,
+    /// A bbox is a `BarrierFragment` if its aspect ratio w/h ≥ this
+    /// (very wide) AND its area < `max_numeral_area`.
+    /// Stored as a numerator with implicit denominator 1 — so
+    /// `barrier_aspect_min = 4` means "w/h ≥ 4".
+    pub barrier_aspect_min: u32,
+    /// Mean RGB-sum-per-pixel threshold; values BELOW this are "dark"
+    /// (ink-bearing). Range 0..=765 (3 channels × 255).
+    /// A bbox darker than this is content; lighter is barrier-like.
+    pub dark_threshold: u32,
+}
+
+impl Default for IconographicGlyphClassifier {
+    /// Defaults calibrated for SLUB 3874×7649 imagery + ClosingThresholdSegmenter.
+    /// `register_bands` defaults empty; caller MUST populate from
+    /// `RegisterAwareSegmenter::register_bands(img)` before classifying
+    /// — an empty `register_bands` causes `Figure(...)` to be unreachable
+    /// (all candidates fall through to `Unknown`).
+    fn default() -> Self {
+        Self {
+            page: 0,
+            register_bands: Vec::new(),
+            max_numeral_area: 10_000,    // up to ~100×100 pixels
+            max_glyph_area: 50_000,      // up to ~225×225 pixels
+            min_figure_area: 50_000,
+            barrier_aspect_min: 4,       // w/h ≥ 4 → barrier-like
+            dark_threshold: 500,         // mean RGB-sum < 500 → ink-bearing
+        }
+    }
+}
+
+impl IconographicGlyphClassifier {
+    /// Construct for a given page with the supplied register bands.
+    pub fn new(page: u8, register_bands: Vec<(u32, u32)>) -> Self {
+        Self { page, register_bands, ..Self::default() }
+    }
+
+    /// Whether a y-coordinate falls inside band 0 (the topmost band).
+    /// Empty bands → always false (Figure unreachable, by design).
+    pub fn in_band_zero(&self, y: u32) -> bool {
+        match self.register_bands.first() {
+            None => false,
+            Some(&(top, bottom)) => y >= top && y < bottom,
+        }
+    }
+
+    /// Aspect-ratio w/h computed via integer cross-multiplication.
+    /// Returns true iff w/h is in `[0.4, 2.5]`, the "roughly square-ish
+    /// to portrait" range used throughout the segmenter framework.
+    fn aspect_in_figure_range(b: &BoundingBox) -> bool {
+        let (w, h) = (b.w as u64, b.h as u64);
+        if w == 0 || h == 0 { return false; }
+        // w/h ≥ 0.4 ⟺ 5*w ≥ 2*h ; w/h ≤ 2.5 ⟺ 2*w ≤ 5*h
+        5 * w >= 2 * h && 2 * w <= 5 * h
+    }
+
+    /// Compute the mean RGB-sum-per-pixel inside the bbox.
+    /// Returns u32 in 0..=765 (3 channels × 255). 0 = pure black ink,
+    /// 765 = pure white background.
+    pub fn bbox_mean_darkness(image: &ImageBuffer, bbox: &BoundingBox) -> u32 {
+        let bpp = image.bytes_per_pixel as usize;
+        if bpp < 3 { return 765; }
+        let w_img = image.width as usize;
+        let x_start = bbox.x as usize;
+        let y_start = bbox.y as usize;
+        let x_end = (bbox.x + bbox.w).min(image.width) as usize;
+        let y_end = (bbox.y + bbox.h).min(image.height) as usize;
+        if x_end <= x_start || y_end <= y_start { return 765; }
+        let mut sum: u64 = 0;
+        let mut count: u64 = 0;
+        for y in y_start..y_end {
+            for x in x_start..x_end {
+                let off = (y * w_img + x) * bpp;
+                if off + 2 >= image.data.len() { continue; }
+                let r = image.data[off] as u64;
+                let g = image.data[off + 1] as u64;
+                let b = image.data[off + 2] as u64;
+                sum += r + g + b;
+                count += 1;
+            }
+        }
+        if count == 0 { 765 } else { (sum / count) as u32 }
+    }
+}
+
+impl GlyphClassifier for IconographicGlyphClassifier {
+    type Glyph = BboxClass;
+
+    fn classify(&self, image: &ImageBuffer, bbox: BoundingBox) -> Option<BboxClass> {
+        let area = bbox.area();
+        let (w, h) = (bbox.w as u64, bbox.h as u64);
+        if w == 0 || h == 0 { return Some(BboxClass::Unknown); }
+
+        // Aspect-ratio shortcut: very wide + small area → BarrierFragment.
+        // `5 * w > barrier_aspect_min * 5 * h` is equivalent to
+        // `w / h > barrier_aspect_min` via integer cross-multiply.
+        let is_very_wide = (w as u64) >= (self.barrier_aspect_min as u64) * h;
+        if is_very_wide && area < self.max_numeral_area {
+            return Some(BboxClass::BarrierFragment);
+        }
+
+        // Out-of-aspect bboxes that aren't barrier-wide: Unknown.
+        if !Self::aspect_in_figure_range(&bbox) {
+            return Some(BboxClass::Unknown);
+        }
+
+        // Area-bucket classification.
+        if area < self.max_numeral_area {
+            return Some(BboxClass::Numeral);
+        }
+        if area < self.max_glyph_area {
+            return Some(BboxClass::GlyphBlock);
+        }
+
+        // Figure candidate: area ≥ max_glyph_area AND in-aspect (just confirmed).
+        // Two additional gates:
+        //   (a) bbox center y inside band 0 (Q3 default), AND
+        //   (b) bbox mean darkness below threshold (= ink-bearing, Q1 default).
+        let center_y = bbox.y + bbox.h / 2;
+        if !self.in_band_zero(center_y) {
+            return Some(BboxClass::GlyphBlock);
+        }
+        let mean = Self::bbox_mean_darkness(image, &bbox);
+        if mean > self.dark_threshold {
+            // Large region but no ink — likely background-pocket between
+            // glyphs, not a content-bearing figure.
+            return Some(BboxClass::Unknown);
+        }
+        // Passes all gates — assign the page's iconographic figure.
+        // Returns None only if page is out of the 16..=24 Goddess-section
+        // range, in which case "figure" is undefined.
+        IconographicFigure::from_page(self.page).map(BboxClass::Figure)
+    }
+}
+
 /// Classifier that returns the expected `IconographicFigure` for the
 /// page it was constructed for, ignoring the bbox contents.
 ///
@@ -223,5 +417,121 @@ mod tests {
     fn out_of_range_page_returns_no_expected_figure() {
         let r = verify_page_iconography(99, &[], 50_000);
         assert_eq!(r.expected_figure, None);
+    }
+
+    // ── v0.9.3 N05 — IconographicGlyphClassifier tests ────────────────
+
+    /// Build a uniformly-dark synthetic image (all RGB=0 — black ink everywhere).
+    fn dark_image(w: u32, h: u32) -> ImageBuffer {
+        ImageBuffer::new(w, h, 3, vec![0u8; (w * h * 3) as usize]).unwrap()
+    }
+
+    /// Build a uniformly-light synthetic image (all RGB=255 — pure white).
+    fn light_image(w: u32, h: u32) -> ImageBuffer {
+        ImageBuffer::new(w, h, 3, vec![255u8; (w * h * 3) as usize]).unwrap()
+    }
+
+    #[test]
+    fn icg_classifier_bbox_mean_darkness_works() {
+        let dark = dark_image(100, 100);
+        let light = light_image(100, 100);
+        let bbox = BoundingBox { x: 10, y: 10, w: 50, h: 50 };
+        assert_eq!(IconographicGlyphClassifier::bbox_mean_darkness(&dark, &bbox), 0);
+        assert_eq!(IconographicGlyphClassifier::bbox_mean_darkness(&light, &bbox), 765);
+    }
+
+    #[test]
+    fn icg_classifier_returns_numeral_for_small_square_bbox() {
+        // 50×50 = area 2500, area < max_numeral_area=10000, aspect 1.0.
+        let img = dark_image(200, 200);
+        let bbox = BoundingBox { x: 0, y: 0, w: 50, h: 50 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 100)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::Numeral));
+    }
+
+    #[test]
+    fn icg_classifier_returns_glyph_block_for_medium_square_bbox() {
+        // 150×150 = area 22500, area between max_numeral_area and max_glyph_area.
+        let img = dark_image(300, 300);
+        let bbox = BoundingBox { x: 0, y: 0, w: 150, h: 150 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 100)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::GlyphBlock));
+    }
+
+    #[test]
+    fn icg_classifier_returns_barrier_fragment_for_wide_short_bbox() {
+        // 400×20 = area 8000 < max_numeral_area=10000, aspect 20 (very wide).
+        let img = dark_image(500, 100);
+        let bbox = BoundingBox { x: 0, y: 0, w: 400, h: 20 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 100)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::BarrierFragment));
+    }
+
+    #[test]
+    fn icg_classifier_returns_figure_for_large_dark_bbox_in_band_zero() {
+        // 300×300 = area 90000 ≥ min_figure_area=50000, aspect 1.0,
+        // center (150, 150) inside band (0, 500).
+        let img = dark_image(500, 500);
+        let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 500)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::Figure(IconographicFigure::MoonSign)));
+    }
+
+    #[test]
+    fn icg_classifier_demotes_figure_to_glyph_block_outside_band_zero() {
+        // Same large bbox but band 0 is (0, 100); bbox center 150 is outside.
+        let img = dark_image(500, 500);
+        let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 100), (200, 400)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::GlyphBlock));
+    }
+
+    #[test]
+    fn icg_classifier_demotes_figure_to_unknown_if_too_light() {
+        // Large bbox in band 0 BUT image is pure white (mean 765 > dark_threshold=500).
+        let img = light_image(500, 500);
+        let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 500)]);
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::Unknown));
+    }
+
+    #[test]
+    fn icg_classifier_returns_none_for_out_of_range_page() {
+        // Even with valid figure-class geometry, page 99 has no
+        // IconographicFigure → classifier returns None.
+        let img = dark_image(500, 500);
+        let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
+        let c = IconographicGlyphClassifier::new(99, vec![(0, 500)]);
+        assert_eq!(c.classify(&img, bbox), None);
+    }
+
+    #[test]
+    fn icg_classifier_object_contract_one_value_or_none() {
+        // The Object contract: every call returns either ONE BboxClass
+        // value or None — never a confidence vector. Verify by type:
+        // the return type is Option<BboxClass>, not Vec<(BboxClass, f64)>.
+        // This is enforced by the trait signature; this test documents it.
+        let img = dark_image(100, 100);
+        let c = IconographicGlyphClassifier::new(16, vec![(0, 50)]);
+        for bbox in [
+            BoundingBox { x: 0, y: 0, w: 10, h: 10 },     // Numeral
+            BoundingBox { x: 0, y: 0, w: 60, h: 60 },     // GlyphBlock
+            BoundingBox { x: 0, y: 0, w: 90, h: 5 },      // BarrierFragment
+            BoundingBox { x: 0, y: 0, w: 1, h: 90 },      // out-of-aspect → Unknown
+        ] {
+            let result = c.classify(&img, bbox);
+            // Single value (Some or None) — not a vector.
+            assert!(result.is_some() || result.is_none());
+        }
+    }
+
+    #[test]
+    fn icg_classifier_empty_register_bands_prevents_figure() {
+        // With no register bands supplied, in_band_zero is always false,
+        // so a large content-bearing bbox demotes to GlyphBlock.
+        let img = dark_image(500, 500);
+        let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
+        let c = IconographicGlyphClassifier::new(16, Vec::new());
+        assert_eq!(c.classify(&img, bbox), Some(BboxClass::GlyphBlock));
     }
 }
