@@ -27,8 +27,9 @@ use dccms_atlas::segmenter::pipeline::decode_goddess_page_from_path;
 fn main() {
     println!("══════════════════════════════════════════════════════════════════════");
     println!(" H4 visual transducer — real-pixel discharge on SLUB pages 13–24");
-    println!(" (v0.9.3 N07: ClosingThresholdSegmenter + RegisterAwareSegmenter +");
-    println!("              IconographicGlyphClassifier → PageLayout CRAM)");
+    println!(" (ClosingThresholdSegmenter + RegisterAwareSegmenter +");
+    println!("  IconographicGlyphClassifier[FigureBandStrategy::LargestBand]");
+    println!("  → PageLayout CRAM)");
     println!("══════════════════════════════════════════════════════════════════════");
     println!();
     println!(" page | bands | total | figure | classified | expected | fig? | CRAM?");
@@ -93,14 +94,9 @@ fn main() {
     } else if total_runs > 0 {
         let misses = total_runs - figure_matches;
         println!(" Note: {} page(s) where the classifier output diverges from the", misses);
-        println!(" page-context expectation. Under the v0.9.3 N05 Q3 default the");
-        println!(" classifier emits Figure(...) only when a bbox center falls inside");
-        println!(" band 0 of the register-aware segmentation. On pages where the");
-        println!(" register-aware segmenter produces many sub-bands (calibrate Job 4");
-        println!(" showed page 16 has 11 detected sub-bands), band 0 may not span");
-        println!(" the figure's actual y-position. The page-context expectation is");
-        println!(" still recovered through the non-visual reference (CRAM matches);");
-        println!(" the real-pixel discharge holds, the band-0 restriction does not.");
+        println!(" page-context expectation. The CRAM matches are still 12/12 by");
+        println!(" H4 construction; figure_match failure means the classifier");
+        println!(" couldn't find a figure-class bbox in the largest detected band.");
     }
     println!("══════════════════════════════════════════════════════════════════════");
 }

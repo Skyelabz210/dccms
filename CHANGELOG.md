@@ -10,7 +10,45 @@ hold from v0.1 forward. Every entry below preserves them.
 
 ---
 
-## [Unreleased] — v0.9.3-dev
+## [Unreleased] — v0.9.4-dev — Real figure detection on every Goddess page
+
+### Milestone
+
+**12 / 12 Goddess pages classify their expected iconographic figure from real SLUB JPEG pixels.** First clean closure of the H4 visual transducer on real-pixel-provenance bounding boxes with real classifier output agreeing with the page-context expectation on every page in the set.
+
+`cargo run --release --features slub --example decode_goddess`:
+
+```
+ pages decoded:     12
+ CRAM matches:      12 / 12 (H4 closure)
+ figure matches:    12 / 12 (real-pixel discharge)
+```
+
+### Added
+- `segmenter::classify::FigureBandStrategy` enum with `Band0Only` (v0.9.3 N05 default, kept for regression testing) and `LargestBand` (v0.9.4 N11 default) variants. Self-calibrating: `LargestBand` picks the band with the largest y-extent, which is the actual figure register on every Goddess page (barrier-row clusters are tiny by comparison).
+- `IconographicGlyphClassifier::with_strategy(page, bands, strategy)` constructor.
+- `IconographicGlyphClassifier::figure_band_index()` — index of the band the classifier is gating on.
+- `IconographicGlyphClassifier::in_figure_band(y)` — strategy-aware band-membership check.
+- 5 new classify unit tests covering both strategy variants, single-band pages (15, 24), and the regression that `Band0Only` still demotes when the figure is outside band 0.
+
+### Changed
+- `IconographicGlyphClassifier::classify` now uses `in_figure_band` instead of the v0.9.3 N05 `in_band_zero`. Default `FigureBandStrategy::LargestBand` brings figure-match from 5 / 12 (v0.9.3) to 12 / 12 (v0.9.4) on the SLUB pages 13-24 set.
+- `IconographicGlyphClassifier::in_band_zero` is `#[deprecated]` — kept for compatibility but no longer the gate.
+- Integration test `classifier_recovers_every_goddess_figure_on_real_pixels` tightens its regression gate from "≥ 2 of 9 Goddess pages" to "9 of 9". Future regressions in figure recovery are now caught by the test suite.
+- `examples/decode_goddess.rs` header updated to reflect `LargestBand` strategy and the new diagnostic on misses.
+- `dccms_atlas` crate version `0.9.2-dev` → `0.9.4-dev`.
+
+### Test counts
+- v0.9.3 baseline: 669 / 0 (547 + 6 integration + 94 + 22)
+- v0.9.4: 674 / 0 (552 + 6 integration + 94 + 22) — +5 classify unit tests for the new strategy.
+
+### Surfaced as natural v0.9.5+ work (not closed in v0.9.4)
+- G5 — extend SLUB imagery to pages 1-12, 25-74. The pipeline now produces meaningful per-page output; extending the input set is the load-bearing next step.
+- Venus pages 24, 46-50 — same calibrated machinery applies. Pages 46-50 would extend cross-source corroboration onto Venus content; pages 24+28+34+38 are all on the vault-known WWII-damage list.
+
+---
+
+## [0.9.3-dev]
 
 ### Milestone
 

@@ -65,9 +65,38 @@ pub enum BboxClass {
     Unknown,
 }
 
+/// Which register band a candidate figure-class bbox must occupy.
+///
+/// v0.9.3 N05 shipped with `Band0Only`. v0.9.3 N07 surfaced its limit:
+/// on Goddess pages the register-aware segmenter detects 5-11 sub-bands
+/// per page (every 1-2-row barrier-pixel cluster creates a band
+/// boundary), and band 0 is the ~70-pixel top margin, NOT the figure
+/// register which lives 30-50% down. Result: 7/12 figure-match misses
+/// on real SLUB pixels.
+///
+/// v0.9.4 N11 introduces `LargestBand` as the default — pick the band
+/// with the largest y-extent. The figure register is the largest band
+/// by construction; barrier-row clusters are tiny. Self-calibrating, no
+/// magic constants.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum FigureBandStrategy {
+    /// v0.9.3 N05 Q3 default — figure-class allowed only in band 0
+    /// (the topmost band). Kept for regression testing.
+    Band0Only,
+    /// v0.9.4 N11 default — figure-class allowed only in the band with
+    /// the largest `(y_bottom - y_top)` extent. Self-calibrates per
+    /// page; works on pages with 1 band (no barriers detected — pages
+    /// 15, 24) as well as 5-11 sub-bands.
+    LargestBand,
+}
+
+impl Default for FigureBandStrategy {
+    fn default() -> Self { FigureBandStrategy::LargestBand }
+}
+
 /// First real `GlyphClassifier` — bbox geometry + auxiliary pixel
-/// darkness, with `Figure` restricted to band 0 (the topmost
-/// `RegisterAwareSegmenter` band).
+/// darkness, with `Figure` restricted to a specific band selected by
+/// `figure_band_strategy`.
 ///
 /// Calibrated for SLUB 3874 × 7649 imagery; thresholds below are
 /// empirical defaults chosen against the actual ClosingThresholdSegmenter
@@ -78,16 +107,17 @@ pub struct IconographicGlyphClassifier {
     /// The page being analyzed; supplies the `Figure(...)` payload.
     pub page: u8,
     /// Register bands from `RegisterAwareSegmenter::register_bands(img)`,
-    /// each `(y_top, y_bottom)` inclusive-exclusive. `register_bands[0]`
-    /// is the topmost band — the only band where `Figure(...)` is
-    /// emitted, per the v0.9.3 N05 Q3 default.
+    /// each `(y_top, y_bottom)` half-open.
     pub register_bands: Vec<(u32, u32)>,
+    /// Which band(s) are eligible for `Figure(...)` classification.
+    /// Default `LargestBand` (v0.9.4 N11).
+    pub figure_band_strategy: FigureBandStrategy,
     /// Bboxes smaller than this are `Numeral` (or `BarrierFragment` if
     /// flat / wide / pale).
     pub max_numeral_area: u64,
     /// Bboxes between `max_numeral_area` and this are `GlyphBlock`.
     pub max_glyph_area: u64,
-    /// Bboxes ≥ this are candidate `Figure` (subject to band 0 check).
+    /// Bboxes ≥ this are candidate `Figure` (subject to band check).
     pub min_figure_area: u64,
     /// A bbox is a `BarrierFragment` if its aspect ratio w/h ≥ this
     /// (very wide) AND its area < `max_numeral_area`.
@@ -105,11 +135,12 @@ impl Default for IconographicGlyphClassifier {
     /// `register_bands` defaults empty; caller MUST populate from
     /// `RegisterAwareSegmenter::register_bands(img)` before classifying
     /// — an empty `register_bands` causes `Figure(...)` to be unreachable
-    /// (all candidates fall through to `Unknown`).
+    /// (all candidates fall through to `GlyphBlock` or `Unknown`).
     fn default() -> Self {
         Self {
             page: 0,
             register_bands: Vec::new(),
+            figure_band_strategy: FigureBandStrategy::default(),
             max_numeral_area: 10_000,    // up to ~100×100 pixels
             max_glyph_area: 50_000,      // up to ~225×225 pixels
             min_figure_area: 50_000,
@@ -121,12 +152,59 @@ impl Default for IconographicGlyphClassifier {
 
 impl IconographicGlyphClassifier {
     /// Construct for a given page with the supplied register bands.
+    /// Uses the default `FigureBandStrategy::LargestBand`.
     pub fn new(page: u8, register_bands: Vec<(u32, u32)>) -> Self {
         Self { page, register_bands, ..Self::default() }
     }
 
-    /// Whether a y-coordinate falls inside band 0 (the topmost band).
+    /// Construct with explicit band strategy.
+    pub fn with_strategy(
+        page: u8,
+        register_bands: Vec<(u32, u32)>,
+        strategy: FigureBandStrategy,
+    ) -> Self {
+        Self {
+            page,
+            register_bands,
+            figure_band_strategy: strategy,
+            ..Self::default()
+        }
+    }
+
+    /// Index of the band a candidate figure-class bbox must fall in,
+    /// per the configured `figure_band_strategy`. Returns `None` when
+    /// no bands are populated (Figure unreachable, by design).
+    pub fn figure_band_index(&self) -> Option<usize> {
+        if self.register_bands.is_empty() { return None; }
+        match self.figure_band_strategy {
+            FigureBandStrategy::Band0Only => Some(0),
+            FigureBandStrategy::LargestBand => {
+                // Pick the band with the largest y-extent. On ties pick
+                // the lowest index (deterministic).
+                self.register_bands.iter()
+                    .enumerate()
+                    .max_by_key(|(_, &(t, b))| b.saturating_sub(t))
+                    .map(|(i, _)| i)
+            }
+        }
+    }
+
+    /// Whether a y-coordinate falls inside the configured figure band.
     /// Empty bands → always false (Figure unreachable, by design).
+    pub fn in_figure_band(&self, y: u32) -> bool {
+        match self.figure_band_index() {
+            None => false,
+            Some(i) => {
+                let (top, bottom) = self.register_bands[i];
+                y >= top && y < bottom
+            }
+        }
+    }
+
+    /// Legacy alias retained for backward compatibility with v0.9.3 N05.
+    /// Always evaluates against band 0 regardless of the configured
+    /// strategy. Use `in_figure_band` for strategy-aware checks.
+    #[deprecated(since = "0.9.4-dev", note = "Use in_figure_band; this always checks band 0 regardless of strategy")]
     pub fn in_band_zero(&self, y: u32) -> bool {
         match self.register_bands.first() {
             None => false,
@@ -204,10 +282,11 @@ impl GlyphClassifier for IconographicGlyphClassifier {
 
         // Figure candidate: area ≥ max_glyph_area AND in-aspect (just confirmed).
         // Two additional gates:
-        //   (a) bbox center y inside band 0 (Q3 default), AND
+        //   (a) bbox center y inside the configured figure band
+        //       (`FigureBandStrategy::LargestBand` by default per v0.9.4 N11), AND
         //   (b) bbox mean darkness below threshold (= ink-bearing, Q1 default).
         let center_y = bbox.y + bbox.h / 2;
-        if !self.in_band_zero(center_y) {
+        if !self.in_figure_band(center_y) {
             return Some(BboxClass::GlyphBlock);
         }
         let mean = Self::bbox_mean_darkness(image, &bbox);
@@ -527,11 +606,93 @@ mod tests {
 
     #[test]
     fn icg_classifier_empty_register_bands_prevents_figure() {
-        // With no register bands supplied, in_band_zero is always false,
+        // With no register bands supplied, in_figure_band is always false,
         // so a large content-bearing bbox demotes to GlyphBlock.
         let img = dark_image(500, 500);
         let bbox = BoundingBox { x: 0, y: 0, w: 300, h: 300 };
         let c = IconographicGlyphClassifier::new(16, Vec::new());
         assert_eq!(c.classify(&img, bbox), Some(BboxClass::GlyphBlock));
+    }
+
+    // ── v0.9.4 N11 — FigureBandStrategy::LargestBand tests ─────────────
+
+    #[test]
+    fn icg_largest_band_picks_band_with_max_y_extent() {
+        // 3 bands: (0,77)=77, (100,2500)=2400, (2700,2800)=100.
+        // LargestBand should pick index 1.
+        let bands = vec![(0, 77), (100, 2500), (2700, 2800)];
+        let c = IconographicGlyphClassifier::with_strategy(
+            16, bands, FigureBandStrategy::LargestBand);
+        assert_eq!(c.figure_band_index(), Some(1));
+        // y=1000 is inside band 1.
+        assert!(c.in_figure_band(1000));
+        // y=50 is inside band 0 (which is NOT the figure band under LargestBand).
+        assert!(!c.in_figure_band(50));
+        // y=2750 is inside band 2 (also not the figure band).
+        assert!(!c.in_figure_band(2750));
+    }
+
+    #[test]
+    fn icg_band0_strategy_preserves_v093_behavior() {
+        // Same 3 bands; Band0Only picks index 0.
+        let bands = vec![(0, 77), (100, 2500), (2700, 2800)];
+        let c = IconographicGlyphClassifier::with_strategy(
+            16, bands, FigureBandStrategy::Band0Only);
+        assert_eq!(c.figure_band_index(), Some(0));
+        assert!(c.in_figure_band(50));       // inside band 0
+        assert!(!c.in_figure_band(1000));    // inside band 1 — not band 0
+    }
+
+    #[test]
+    fn icg_default_strategy_is_largest_band() {
+        // The Default impl must give LargestBand, not Band0Only.
+        let c: IconographicGlyphClassifier = Default::default();
+        assert_eq!(c.figure_band_strategy, FigureBandStrategy::LargestBand);
+    }
+
+    #[test]
+    fn icg_largest_band_recovers_figure_outside_band_zero() {
+        // Real-pixel-realistic scenario: page has many bands, figure
+        // lives in band 1 (the actual register), band 0 is a tiny top
+        // margin. Under LargestBand the figure is correctly classified.
+        let img = dark_image(500, 5000);
+        let bbox = BoundingBox { x: 100, y: 1000, w: 300, h: 300 };  // center y=1150
+        let bands = vec![
+            (0, 77),         // tiny top margin
+            (100, 2500),     // the figure register — largest
+            (2510, 2520),    // barrier-cluster sub-band
+            (2530, 4900),    // second register
+        ];
+        let c_largest = IconographicGlyphClassifier::with_strategy(
+            16, bands.clone(), FigureBandStrategy::LargestBand);
+        assert_eq!(
+            c_largest.classify(&img, bbox),
+            Some(BboxClass::Figure(IconographicFigure::MoonSign)),
+            "LargestBand should recover the figure in band 1"
+        );
+        // Under the old Band0Only strategy the same bbox demotes.
+        let c_band0 = IconographicGlyphClassifier::with_strategy(
+            16, bands, FigureBandStrategy::Band0Only);
+        assert_eq!(
+            c_band0.classify(&img, bbox),
+            Some(BboxClass::GlyphBlock),
+            "Band0Only should demote the figure (regression test for v0.9.3 behavior)"
+        );
+    }
+
+    #[test]
+    fn icg_largest_band_handles_single_band_pages() {
+        // Pages 15 and 24 in SLUB had no detected barriers → 1 band only.
+        // LargestBand picks band 0 in this case — equivalent to Band0Only.
+        let img = dark_image(500, 5000);
+        let bbox = BoundingBox { x: 100, y: 1000, w: 300, h: 300 };
+        let bands = vec![(0, 4999)];   // whole page is one band
+        let c = IconographicGlyphClassifier::with_strategy(
+            16, bands, FigureBandStrategy::LargestBand);
+        assert_eq!(c.figure_band_index(), Some(0));
+        assert_eq!(
+            c.classify(&img, bbox),
+            Some(BboxClass::Figure(IconographicFigure::MoonSign))
+        );
     }
 }

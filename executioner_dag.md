@@ -940,3 +940,79 @@ Plus integration tests `cargo test --release --features dccms_atlas/slub --test 
 - **G5**: extend SLUB imagery to pages 1-12, 25-74. User explicitly held this until the bridge is built. Bridge is now built. G5 is unblocked for v0.9.4+.
 - **Venus pages 24, 46-50**: the same calibrated machinery applies to the Venus Table region. v0.9.4+ extension.
 
+---
+
+# v0.9.4 — "Real figure detection on every Goddess page" — DAG
+
+**Session:** 2026-05-19
+**Skill:** executioner
+**Manifest state at start:** v0.9.3-dev, 669 tests, HEAD `ee500a2`
+**Thesis:** v0.9.3 closed H4 Discharge (12/12 CRAM matches) on real pixels but the first-pass classifier missed 7/9 Goddess figures due to the Q3 band-0 restriction. v0.9.4 chooses strategy (b) — `FigureBandStrategy::LargestBand` — self-calibrating, no magic constants. Expected to close all 7 misses.
+
+## Nodes
+
+### NODE-N11 — IconographicGlyphClassifier: largest-band strategy
+- **Type:** STRUCT + IMPL + TEST
+- **Size:** S
+- **Inputs:** `segmenter/classify.rs` v0.9.3 N05 baseline
+- **Output:** `segmenter/classify.rs` with `FigureBandStrategy` enum, `figure_band_index()`, `in_figure_band(y)`, `with_strategy(...)` constructor, deprecated `in_band_zero`
+- **Gate:** classifier `Default` uses `LargestBand`; `Band0Only` retained for regression; classifier `classify()` calls `in_figure_band` not `in_band_zero`
+- **Status:** PASS
+- **Closes:** v0.9.3 N07 7/12 → v0.9.4 expected 12/12
+
+### NODE-N12 — Update classify tests for new band-selection semantics
+- **Type:** TEST
+- **Size:** XS
+- **Inputs:** N11 output
+- **Output:** 5 new unit tests in `classify.rs::tests` covering `LargestBand` picks max-extent band, `Band0Only` preserves v0.9.3 behavior, default is `LargestBand`, recovery scenario, single-band-page handling
+- **Gate:** all 22 classify unit tests pass (was 17)
+- **Status:** PASS
+
+### NODE-N13 — Re-run decode_goddess; capture new figure-match rate
+- **Type:** REPORT
+- **Size:** XS
+- **Inputs:** N11 + `examples/decode_goddess.rs`, real SLUB imagery
+- **Output:** end-to-end run output table
+- **Gate:** figure_match = 12/12 on SLUB pages 13-24
+- **Status:** PASS — every Goddess figure recovered:
+
+```
+ page | bands | total | figure | classified | expected | fig? | CRAM?
+ -----+-------+-------+--------+------------+----------+------+------
+   16 |    11 |  2622 |     13 | MoonSign   | MoonSign |   ✓  |   ✓
+   17 |     6 |  2685 |     20 | WaterPot   | WaterPot |   ✓  |   ✓
+   18 |     6 |  2648 |     11 | WeavingSh… | Weaving… |   ✓  |   ✓
+   19 |     5 |  3197 |     11 | SnakeHead… | SnakeHe… |   ✓  |   ✓
+   20 |     6 |  3225 |      2 | EclipseGl… | Eclipse… |   ✓  |   ✓
+   21 |     9 |  3294 |     24 | BirthGlyph | BirthGl… |   ✓  |   ✓
+   22 |     3 |  2866 |     18 | HealingGl… | Healing… |   ✓  |   ✓
+   23 |     5 |  2984 |     11 | FloodGlyph | FloodGl… |   ✓  |   ✓
+   24 |     1 |  2498 |     11 | BlankBrid… | BlankBr… |   ✓  |   ✓
+
+ CRAM matches:      12 / 12
+ figure matches:    12 / 12 ★
+```
+
+### NODE-N14 — CHANGELOG + executioner_dag.md checkpoint, commit + push
+- **Type:** DOC
+- **Size:** XS
+- **Output:** CHANGELOG.md updated, this checkpoint appended
+- **Gate:** clean commit on main
+- **Status:** IN PROGRESS
+
+## CHECKPOINT — 2026-05-19 (v0.9.4 COMPLETE)
+
+**Workspace test count:** 669 → 674 (+5 classify unit tests for new strategy).
+**Warnings:** 0.
+**figure_match rate:** v0.9.3 N07 = 5/12 → v0.9.4 N13 = **12/12** (cleared via single semantic change in `classify.rs`).
+
+### What landed
+- v0.9.3 N07's 7 band-0 misses (pages 16-22) all close.
+- Integration test regression gate tightens from "≥ 2 of 9 Goddess matches" to "9 of 9 Goddess matches".
+- `Band0Only` retained as opt-in for regression testing.
+- A1 zero-float preserved. Object contract preserved.
+
+### Pending (v0.9.5+)
+- G5 — extend SLUB imagery to pages 1-12, 25-74. Pipeline is ready to consume them.
+- Venus pages 24, 46-50 — cross-source corroboration extension; brings additional vault-known WWII-damage pages (28, 34, 38) into the comparison set.
+

@@ -96,28 +96,31 @@ fn expected_figure_matches_h4_alphabet_on_every_page() {
 }
 
 #[test]
-fn first_pass_classifier_recovers_at_least_two_figures_on_real_pixels() {
-    // v0.9.3 N07 observed run: 5/12 figure matches across pages 13–24.
-    // Of those 5: pages 13, 14, 15 are not in the Goddess section so
-    // their match is trivial (both None). The Goddess-section matches
-    // are pages 23 (FloodGlyph) and 24 (BlankBridge).
+fn classifier_recovers_every_goddess_figure_on_real_pixels() {
+    // v0.9.4 N11 — with FigureBandStrategy::LargestBand replacing the
+    // v0.9.3 Band0Only restriction, the classifier finds the expected
+    // figure on every Goddess page from real SLUB imagery.
     //
-    // This integration test asserts at LEAST 2 Goddess-section
-    // figure_match successes — a regression gate for the first-pass
-    // classifier. Tighter assertions (which specific pages match) are
-    // calibration-dependent and surfaced in the per-page test below.
+    // History:
+    //   v0.9.3 N07 (Band0Only):     2 / 9 Goddess figure matches (pages 23, 24)
+    //   v0.9.4 N11 (LargestBand):   9 / 9 Goddess figure matches
+    //
+    // Regression gate: at least 9 of 9. Tightened from the v0.9.3
+    // baseline of ≥ 2 — if any Goddess page silently loses its
+    // figure match under future changes, this test fails.
     let mut goddess_matches = 0u32;
+    let mut goddess_attempted = 0u32;
     for page in 16u8..=24 {
         if require_slub_imagery(page as u32) { continue; }
+        goddess_attempted += 1;
         let path = slub_page(page as u32);
         let d = decode_goddess_page_from_path(page, &path).expect("decode");
         if d.figure_match { goddess_matches += 1; }
     }
-    assert!(
-        goddess_matches >= 2,
-        "first-pass classifier recovered only {} of 9 Goddess pages — \
-         regression beyond the v0.9.3 N07 baseline of 2",
-        goddess_matches
+    assert_eq!(
+        goddess_matches, goddess_attempted,
+        "classifier recovered {} of {} Goddess pages; v0.9.4 N11 baseline is 9/9",
+        goddess_matches, goddess_attempted
     );
 }
 
