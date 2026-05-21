@@ -1016,3 +1016,51 @@ Plus integration tests `cargo test --release --features dccms_atlas/slub --test 
 - G5 — extend SLUB imagery to pages 1-12, 25-74. Pipeline is ready to consume them.
 - Venus pages 24, 46-50 — cross-source corroboration extension; brings additional vault-known WWII-damage pages (28, 34, 38) into the comparison set.
 
+---
+
+# v0.9.5 — Full-codex coverage + two-modes WWII damage finding — DAG
+
+**Session:** 2026-05-20
+**Skill:** executioner
+**Manifest state at start:** v0.9.4-dev, 674 tests, HEAD `ad0b0af`
+**Thesis:** G5 unblocked. Extend SLUB to 74/74, FAMSI to all 6 PDFs, run full-codex sweep, see what the data says about the 8 vault-known damaged pages.
+
+## Nodes (executed)
+
+| Node | Status | Output |
+|---|---|---|
+| N15 | PASS | SLUB IIIF probe succeeded; URL pattern confirmed; page 1 = 3874×7649 RGB JPEG @ 300 DPI |
+| N16 | PASS | 62 new SLUB pages downloaded (success=61 skip=13 fail=0; full coverage 74/74) |
+| N17 | PASS | 5 new FAMSI PDFs downloaded; ~90 MB total; coverage of full codex |
+| N18 | PASS | `famsi_extract.rs` rewritten to sweep all 6 PDFs; 65 pages extracted (9 missed by byte-scanner — pages 9-12, 42-45, 74; all 8 vault-damaged pages in coverage) |
+| N19 | PASS | `paths::FAMSI_PAGE_RANGE = 1..=74`; `paths::SLUB_PAGE_RANGE` added; `paths::FAMSI_SOURCE_PDFS` const added; +2 path-range coverage tests |
+| N20 | PASS | `examples/decode_full_codex.rs` shipped; runs full-codex sweep with cross-source on vault-damaged pages and Goddess pipeline; the run surfaced the two-modes damage finding |
+| N21 | IN PROGRESS | this checkpoint |
+
+## CHECKPOINT — 2026-05-20 (v0.9.5 COMPLETE)
+
+**Workspace test count:** 674 → 676 (+2 paths range tests; no functional behavior changes).
+**Warnings:** 0.
+**Coverage:** SLUB 74/74; FAMSI 65/74; vault-damaged with FAMSI 8/8.
+
+### Headline empirical finding from N20
+
+`cargo run --release --features slub --example decode_full_codex` on the full vault-damaged set produces a clean split:
+
+| Damage mode | Pages | Signature |
+|---|---|---|
+| **A — net content loss** | 24 | SLUB max-area ≪ FAMSI max-area. Ink dissolved. |
+| **B — net content gain (false ink)** | 2, 4, 28, 34, 38, 71, 72 | SLUB max-area > FAMSI max-area (up to 46× for page 2). Water stains + mould + paper-fibre damage add spurious dark regions. |
+
+The v0.9.2 stat-only `slub_signals_damage` predicate catches 1 / 8 — by design — because it was calibrated on Mode A only. **The finding is not a bug to fix; it is the empirical surface v0.9.5 was built to reveal.** v0.9.6 will add a cross-source ratio predicate sketched in `docs/v0_9_5_findings.md` §D.
+
+### v0.9.4 result preserved on extended dataset
+
+H4 Goddess pipeline: **9/9 figure matches + 9/9 CRAM matches** on the 9 Goddess pages now decoded against the full 74-page codex. No regression from v0.9.4.
+
+### Pending (v0.9.6+)
+
+- **Cross-source damage classifier** — replace v0.9.2 stat-only predicate with SLUB↔FAMSI ratio predicate. Two candidates: `slub_max / famsi_max < 0.1` for Mode A, `> 5.0` for Mode B. Should corroborate 8/8.
+- **`DamageMode::{InkLoss, StainAccumulation}` typed enum** — promote the two-modes finding to the type system.
+- **Investigate the 9 missing FAMSI plates** (pages 9-12, 42-45, 74) via `lopdf` PDF parser. Not blocking.
+

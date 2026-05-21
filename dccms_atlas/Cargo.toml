@@ -1,6 +1,6 @@
 [package]
 name = "dccms_atlas"
-version = "0.9.4-dev"
+version = "0.9.5-dev"
 edition = "2021"
 authors = ["Acid"]
 description = "Dresden Codex Configuration Manifold Study — query layer on the QMNF substrate"
@@ -41,4 +41,8 @@ required-features = ["slub"]
 
 [[example]]
 name = "decode_goddess"
+required-features = ["slub"]
+
+[[example]]
+name = "decode_full_codex"
 required-features = ["slub"]

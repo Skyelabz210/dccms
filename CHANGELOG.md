@@ -10,7 +10,47 @@ hold from v0.1 forward. Every entry below preserves them.
 
 ---
 
-## [Unreleased] — v0.9.4-dev — Real figure detection on every Goddess page
+## [Unreleased] — v0.9.5-dev — Full-codex coverage + two-modes WWII damage finding
+
+### Milestone
+
+**74 / 74 SLUB pages on disk; 65 / 74 FAMSI chromolithograph plates; 8 / 8 vault-damaged pages now have cross-source data.** The single-source-only coverage floor that v0.9.4 left in place is lifted, and the first full-codex sweep produced a clean empirical finding: the page-24 damage signature does NOT generalize. Two qualitatively distinct damage modes exist in the vault-known list.
+
+### Added
+- `scripts/download_slub_all.sh` — bulk SLUB IIIF downloader; skip-existing; cites in user-agent. Downloads pages 1-74 from `https://digital.slub-dresden.de/data/kitodo/codedrm_280742827/...`.
+- `scripts/download_famsi_all.sh` — bulk FAMSI Förstemann-Schele PDF downloader for all 6 segments (pp01-12, pp13-24, pp25-35, pp36-45, pp46-59, pp60-74).
+- `paths::SLUB_PAGE_RANGE = 1..=74` — full Dresden Codex Förstemann range.
+- `paths::FAMSI_SOURCE_PDFS` — single source of truth for the 6 FAMSI PDFs + their page ranges. Consumed by `famsi_extract.rs`.
+- `examples/decode_full_codex.rs` — full-codex sweep example. Reports per-page stats, cross-source SLUB↔FAMSI on every vault-damaged page, and the Goddess pipeline on pages 16-24.
+- `docs/v0_9_5_findings.md` — detailed write-up of the two-modes damage finding.
+- 2 new path-coverage unit tests (FAMSI/SLUB range extents, FAMSI PDFs partition 1..=74 without gaps).
+
+### Changed
+- `paths::FAMSI_PAGE_RANGE` extended from `13..=24` to `1..=74`.
+- `examples/famsi_extract.rs` rewritten to sweep all 6 FAMSI PDFs and produce JPEGs labeled with their actual Förstemann page numbers. Idempotent (skips pages with identical on-disk bytes).
+- `dccms_atlas` crate version `0.9.4-dev` → `0.9.5-dev`.
+
+### Two-modes WWII damage finding
+
+The vault-known damaged pages [2, 4, 24, 28, 34, 38, 71, 72] split cleanly into two modes under cross-source comparison:
+
+- **Mode A (page 24):** net content **loss**. SLUB max-area 303k ≪ FAMSI max-area 4.5M. Ink dissolved; the photograph reads nearly blank. v0.9.2's `slub_signals_damage` predicate was calibrated on this mode.
+- **Mode B (pages 2, 4, 28, 34, 38, 71, 72):** net content **gain** (false ink). Water stains, mould, paper-fibre damage add dark regions the threshold segmenter mistakes for ink. SLUB max-area frequently exceeds FAMSI max-area, sometimes by 46× (page 2). The chromolithograph captures the ideal glyph content; the photograph captures the physical artifact including damage.
+
+The v0.9.2 stat-only damage predicate catches 1 / 8 — by design — because it was calibrated on Mode A only. v0.9.6+ needs a cross-source ratio predicate; sketched in `docs/v0_9_5_findings.md` §D.
+
+### Tests
+- v0.9.4 baseline: 674 / 0
+- v0.9.5: **676 / 0** (+2 paths tests, no functional regressions).
+
+### Coverage gaps (v0.9.6+)
+- Cross-source damage classifier (`DamageMode::{InkLoss, StainAccumulation}` typed enum).
+- 9 missing FAMSI extractions (pages 9-12, 42-45, 74) — byte-scanner doesn't catch their JPEG encodings. Investigation deferred; not on the WWII-damage critical path (all 8 damaged pages are in coverage).
+- Pipeline beyond the Goddess section (non-Goddess pages need their own decoder logic; `IconographicFigure::from_page` is undefined outside 16..=24 by design).
+
+---
+
+## [0.9.4-dev] — Real figure detection on every Goddess page
 
 ### Milestone
 
