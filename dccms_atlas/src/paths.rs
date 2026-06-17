@@ -48,7 +48,7 @@ pub fn home() -> PathBuf {
 ///
 /// Override with `DCCMS_IMPORTS_ROOT` environment variable to run on any machine:
 /// ```text
-/// DCCMS_IMPORTS_ROOT=/my/images cargo run --features slub --example scan
+/// DCCMS_IMPORTS_ROOT=/my/images cargo run --features slub --example slub_segment
 /// ```
 /// Falls back to the hard-coded path `~/Agents/imports` when the variable is unset.
 pub fn imports_root() -> PathBuf {
