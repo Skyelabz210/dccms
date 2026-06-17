@@ -29,6 +29,7 @@ research/
   dresden_hcrm/
     00_project_control/
       SESSION_INTEGRATION_REPORT_20260616.md   # session launch packet [USER-PROVIDED]
+    EXTENDED_BASIS_CANVAS.md                    # two-tier prime architecture {17,19} [USER-STATED]
     01_dag/
       INVESTIGATION_DAG.md                      # gating DAG G0–G6 [USER-PROVIDED]
     03_skills/
