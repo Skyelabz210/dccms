@@ -34,10 +34,10 @@ must not feed any codex-comparison claim.
 birth event
   -> integer arcsecond celestial coordinates
   -> sign / house / aspect / dignity / body-domain map
-  -> prime residue basis {2,3,5,7,11,13,17,19}
+  -> prime residue basis {2,3,5,7,11,13}
   -> shadow (11) and boundary (13) signatures
   -> codex operator comparison
 ```
 
-The exhaustive natal data-field schema is in
-`../dresden_hcrm/03_skills/codex_natal_fields_checklist.md`.
+The exhaustive natal data-field schema (including the full residue column set it
+records) is in `../dresden_hcrm/03_skills/codex_natal_fields_checklist.md`.

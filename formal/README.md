@@ -40,8 +40,11 @@ This separation is the methodology in `../METHODOLOGY.md` in action: an ambitiou
 result (a 60-year RNS division problem solved exactly) admitted to the record
 **because** it is machine-checked, with its scope stated precisely.
 
-### Build artifacts
+### Excluded from import
 
-Compiled outputs (`*.vo/.vok/.vos/.glob`, caches) and the prebuilt FHE benchmark
-binary/tarball were stripped before import; only sources and documentation are
-tracked. Rebuild Lean with `lake build`, Coq with `coqc coq/K_Elimination.v`.
+- **Compiled outputs** (`*.vo/.vok/.vos/.glob`, caches) — stripped; rebuild Lean
+  with `lake build`, Coq with `coqc coq/K_Elimination.v`.
+- **`docs/dist/` (MANA FHE benchmark)** — removed. The package's own `README.txt`
+  states it is a **separate, proprietary** artifact ("All Rights Reserved",
+  redistribution prohibited), distinct from the MIT-licensed K-Elimination
+  theorem. It is unrelated to the proof and was not retained.
