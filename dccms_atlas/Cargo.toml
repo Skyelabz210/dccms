@@ -46,3 +46,7 @@ required-features = ["slub"]
 [[example]]
 name = "decode_full_codex"
 required-features = ["slub"]
+
+[[example]]
+name = "scan"
+required-features = ["slub"]

@@ -45,6 +45,8 @@ pub mod register;
 pub mod classify;
 pub mod comparison;
 pub mod pipeline;     // v0.9.3 N06: end-to-end page→bbox→glyph→CRAM verification
+pub mod scan;         // v0.9.6: real pixel measurements (entropy, ink density, red fraction)
+pub mod crosscheck;   // v0.9.6: vault prediction vs measured pixel evidence
 
 #[cfg(feature = "slub")]
 pub mod slub;

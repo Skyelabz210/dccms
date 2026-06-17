@@ -45,7 +45,16 @@ pub fn home() -> PathBuf {
 }
 
 /// Root of all imported imagery for the codex.
+///
+/// Override with `DCCMS_IMPORTS_ROOT` environment variable to run on any machine:
+/// ```text
+/// DCCMS_IMPORTS_ROOT=/my/images cargo run --features slub --example scan
+/// ```
+/// Falls back to the hard-coded path `~/Agents/imports` when the variable is unset.
 pub fn imports_root() -> PathBuf {
+    if let Ok(root) = std::env::var("DCCMS_IMPORTS_ROOT") {
+        return PathBuf::from(root);
+    }
     home().join("Agents").join("imports")
 }
 
