@@ -16,6 +16,11 @@ as findings. Tag meanings match `RESEARCH_RECORD.md` and `FORMAL_THESIS.md`:
 | `[USER-PROVIDED]` | Uploaded by the project owner as a research input |
 | `[UNRELIABLE]` | Interpretive claim; not independently verified against the manuscript |
 | `[DIRECT-OBS]` | Confirmed against the Dresden Codex facsimile (`docs/facsimile/`) |
+| `[FORMAL-VERIFIED]` | Discharged in a proof assistant, 0 `sorry` / 0 axioms (`../formal/`) |
+
+The project's stance on rigor versus ambition is stated in `../METHODOLOGY.md`:
+rigor is the enabler of ambitious conclusions, not a limit on them — every claim,
+however expansive, is admitted only on verifiable, falsification-tested evidence.
 
 The promotion gates G0–G5 (visible observation → exact arithmetic → local
 alignment → repeated alignment → cross-section recurrence → predictive
