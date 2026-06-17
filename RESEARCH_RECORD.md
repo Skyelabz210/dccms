@@ -353,3 +353,27 @@ H-VENUS-11 through H-SHADOW-ENTROPY, and the final canonical statement.
 Arithmetic status: 290 checks verified with pure Python (no floats). All pass.
 Interpretive claims remain hypotheses tagged `[UNRELIABLE]` pending manuscript
 measurement.
+
+---
+
+## Part 10 — Investigation materials threaded into `research/`
+
+The broader investigation framework (uploaded by the project owner) has been
+threaded into the repository under `research/`. See `research/README.md` for the
+index and reliability discipline. Contents:
+
+- `research/dresden_hcrm/00_project_control/SESSION_INTEGRATION_REPORT_20260616.md`
+  — session launch packet defining the codex-native operator-grammar target,
+  three workstreams, and the G0–G5 promotion gates `[USER-PROVIDED]`
+- `research/dresden_hcrm/01_dag/INVESTIGATION_DAG.md` — gating DAG `[USER-PROVIDED]`
+- `research/dresden_hcrm/03_skills/codex_natal_fields_checklist.md` — exhaustive
+  per-page and per-natal-register data-field schema, hypotheses H1–H7,
+  priority-page list `[USER-PROVIDED]`
+- `research/dresden_hcrm/data/seed/period_prime_residue_seed.csv` — period →
+  prime-residue seed table (spot-checked: internally consistent) `[USER-PROVIDED]`
+- `research/hcrm_app/prototype/` — browser natal-chart prototype. Float-bearing
+  JavaScript; UI concept only, not load-bearing pending integer-arcsecond
+  rewrite `[UNRELIABLE]`
+
+None of this is part of the Rust workspace build; it does not affect the float
+prohibition on the compiled crates.
