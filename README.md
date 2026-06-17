@@ -11,6 +11,13 @@ top of the QMNF / CRAM Safe Basis substrate. **Zero floating-point
 arithmetic anywhere on the verification path** — every claim is certified
 by integer congruence.
 
+> **Methodological stance:** rigor here is the enabler of ambition, not a limit
+> on it. The project pursues large, unconventional conclusions and admits each
+> one to the record only once it is grounded in verifiable, falsification-tested
+> evidence. See [`METHODOLOGY.md`](METHODOLOGY.md). The K-Elimination identity
+> the CRAM substrate relies on is machine-checked (27 Lean 4 theorems, 0 `sorry`,
+> 0 axioms; Coq cross-validated) under [`formal/`](formal/).
+
 The Goddess section is the *target*. The rest of the workspace is the
 apparatus required to read it without leaving exact arithmetic.
 
