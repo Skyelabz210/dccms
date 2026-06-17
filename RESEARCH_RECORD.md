@@ -4,7 +4,8 @@
 `/root/.claude/projects/-home-user-dccms/50581049-8798-55ef-96bf-56182d658d4a.jsonl`
 (532 lines; all user messages and all assistant text blocks extracted verbatim)
 
-**Date compiled:** 2026-06-17
+**Corrected:** 2026-06-17 — the PDF that failed to read during the prior session
+has now been rendered. It is the Dresden Codex itself. See Part 0.
 
 ---
 
@@ -12,14 +13,96 @@
 
 | Tag | Meaning |
 |---|---|
-| `[CODE-READ]` | Confirmed by reading actual source file + line during this session |
+| `[DIRECT-OBS]` | Directly visible in the Dresden Codex PDF images in this session |
+| `[CODE-READ]` | Confirmed by reading actual source file during this session |
 | `[TEST-RUN]` | Confirmed by running `cargo test` in this session |
-| `[REPORTED]` | Stated by the assistant during the session but not independently re-verified here |
-| `[UNRELIABLE]` | Originates in the AI-penned vault documents (Decoded.md, HULTA report, DPM-PRIME theorems); not independently verified |
+| `[REPORTED]` | Stated by the assistant during the prior session; marked unreliable per user instruction |
+| `[UNRELIABLE]` | Interpretive claim; not independently verified against the manuscript |
 | `[FAILED]` | Attempted but tooling failure prevented access |
 | `[USER-STATED]` | User's own words from the transcript |
 
-All `[REPORTED]` items are marked unreliable per the user's instruction: they were produced by an AI during a session with known tooling failures and research evidence contamination.
+---
+
+## Part 0 — Critical correction: the PDF is the Dresden Codex
+
+The PDF that failed to read throughout the prior session has now been successfully
+rendered using `poppler-utils`. It is:
+
+**World Digital Library scan of the Dresden Codex**
+Source: `http://hdl.loc.gov/loc.wdl/wdl.11621`
+Pages: 78 (one PDF page per surviving codex leaf, plus covers)
+Date: 2013-07-01
+Resolution: 912 × 1800 pts per page
+File size: 21.6 MB
+
+The prior session could not read this file and recorded its content as
+unknown. As a result, every claim about the manuscript's observable content
+was treated as AI-penned and marked unreliable. That treatment was wrong.
+The PDF is the primary source — the physical artifact, not an interpretation
+of it.
+
+The following observations were made directly from the rendered images.
+
+### What is directly visible in the manuscript `[DIRECT-OBS]`
+
+**Red and black numerals are both present and distinguishable.**
+Especially clear on PDF pages 46 (Venus table area) and 74 (dense numerical
+table). Red oval shapes and red bar-dot numerals alternate with black bar-dot
+numerals in the astronomical sections. The two ink colors are unmistakably
+distinct in the photographs.
+
+**The bar-dot counting system is the notation throughout.**
+Horizontal bars (value 5) and round dots (value 1) are clearly the numeral
+system on every page that contains numbers. The system is consistent and
+readable.
+
+**Red horizontal register barriers divide pages into bands.**
+Clearly visible on page 16 and throughout the almanac and table sections.
+These horizontal red lines are structural — they partition each page into
+two to four horizontal registers.
+
+**Three-register layout is the standard format for the almanac pages.**
+Pages 16–23 show consistently three horizontal bands, each containing a
+row of deity figures above a row of glyphs and bar-dot numerals.
+
+**Deity figures are painted in the panels.**
+Colored deity paintings (using blue/turquoise and red pigments) appear in
+the figure panels throughout. The almanac section (pages 6, 16–23, 50–52)
+has clearly identifiable figures. The figures on different pages are
+visually distinct from each other.
+
+**Content density varies measurably between sections.**
+- Pages 46–52 (Venus/eclipse table area): dense columnar numerical grids
+  with glyph rows — visibly more ink-covered than almanac pages
+- Pages 16–23 (Goddess almanac): three-register figurative layout —
+  moderately dense with open areas in the figure bands
+- Page 24: partially damaged (a large blank stain in the middle) but the
+  right-side columns carry dense bar-dot numerals — NOT entirely blank
+
+**WWII damage is visible and varies by page.**
+PDF pages 1–3 show near-total content loss (whitened/bleached surfaces).
+Page 24 has a visible stain/damage zone but retains content on its sides.
+Other pages show no visible damage. The "two modes" of damage (content loss
+vs stain accumulation) are directly observable.
+
+**Red is concentrated in the astronomical table sections.**
+On PDF pages 46 (Venus) and 74 (numerical table), red numerals appear in
+clearly distinct bands or alternating positions. On almanac pages, red
+appears mainly in the barrier lines and isolated distance numbers.
+
+### What remains unverified (still requires analysis) `[UNRELIABLE]`
+
+The following were claimed in the vault documents but cannot be confirmed
+from visual inspection alone — they require measurement or decoding:
+
+- Whether the red numbers specifically function as K-elimination correction
+  values (carry numbers)
+- Whether the numerical intervals in the eclipse table decode to 148/177/178
+  days specifically
+- Whether the total eclipse table sum is 11,960 days
+- Whether the overall structure constitutes a CRAM/residue-number machine
+- The specific figure identities (which deity is on which page) — visually
+  they are distinct but naming them requires comparative iconography
 
 ---
 
@@ -45,130 +128,124 @@ The following are the user's actual messages in order, copied from the transcrip
 19. "scrape the session from the very beginning collect all insights, conjectures, theories and hypotheses including any derivation or testing finding that were reported to me but mark it as unreliable to be added to recorded without additional direct analysis due to ai tooling failure resulting in research evidence contamination and create a complete report"
 20. "floating point variables are prohibited in my frameworks. do not allow or introduce floats / we can actually scape the image scanner Idea its much more efficient to confirm visual and take record through illustrating the capture i really just want the last thing i asked for.. a report"
 21. "the report that was provided was performed by a faulting ai so i would like you to go to the very beginning of this conversation and independently collect what i asked for."
+22. "the source document you flagging as circular and unreliable is the Dresden Codex itself"
 
 ---
 
 ## Part 2 — Tooling failures during the session
 
-These failures are the direct cause of research evidence contamination.
+### PDF reading — FAILED throughout the prior session
 
-### PDF reading — FAILED throughout
-
-The user uploaded PDFs containing research material. Every extraction method attempted failed:
-- `pdftoppm` — not installed in the container
+The user uploaded this PDF (the Dresden Codex scan). Every extraction method
+the prior session attempted failed:
+- `pdftoppm` — not installed at that time
 - `pdftotext` — not installed
-- Manual zlib stream decompression — produced garbage (font-encoded, not readable text)
-- `pypdf` — installed but `_cffi_backend` dependency was broken
+- Manual zlib stream decompression — produced garbage
+- `pypdf` — installed but dependency was broken
 
-**Two of the three PDFs were confirmed byte-for-byte identical** (checked via md5). The content of all three PDFs is unknown. Any claim in this session that references content "from the PDFs" is fabricated or drawn from other sources.
+`poppler-utils` was successfully installed in the current session and the
+PDF was rendered. The content is now directly accessible.
 
 ### Model availability failures
 
-Multiple assistant turns (lines 4, 133, 135, 137, 139, 141, 144, 238, 241, 252, 256, 258, 317, 331, 334, 345) returned only: "Claude Fable 5 is currently unavailable." These represent gaps in the session where responses were dropped.
+Multiple assistant turns returned only "Claude Fable 5 is currently unavailable"
+at lines 4, 133, 135, 137, 139, 141, 144, 238, 241, 252, 256, 258, 317, 331,
+334, 345 — 16 dropped turns in total. These are gaps in the session record.
 
 ---
 
-## Part 3 — What was reported about the workspace
+## Part 3 — What was reported about the workspace `[REPORTED]`
 
-Everything in this section was stated by the assistant during the session. It is marked `[REPORTED]` and is unreliable per the user's instruction.
+Everything in this section was stated by the assistant during the prior session.
+Marked `[REPORTED]` and unreliable per the user's instruction (produced by an AI
+in a session with known tooling failures — the primary source was unreadable).
 
 ### 3a — Build and test status `[REPORTED]`
 
-The assistant reported running `cargo test --workspace --release --features dccms_atlas/slub` and observing:
-- 676 tests passing: 554 unit (dccms_atlas) + 6 integration + 94 (dresden_codex) + 22 (prime_hunt)
-- Zero failures, zero warnings
-- Without `--features slub`: 669 passing
+676 tests passing: 554 unit (dccms_atlas) + 6 integration + 94 (dresden_codex) +
+22 (prime_hunt). Zero failures, zero warnings with `--features dccms_atlas/slub`.
+Without `--features slub`: 669 passing.
 
-The assistant also reported:
-- `#![forbid(unsafe_code)]` present with no overrides
-- `#![deny(clippy::float_arithmetic)]` present with no overrides
-- Only external dependency: `image` 0.25 (JPEG only, optional)
+Also reported: `#![forbid(unsafe_code)]` and `#![deny(clippy::float_arithmetic)]`
+present with no overrides; only external dep is `image` 0.25 (optional).
 
 ### 3b — What the code was reported to do `[REPORTED]`
 
-**Calendar arithmetic (~90% of the code):**
-Breaks Maya cycle numbers (Tzolk'in 260, Haab 365, Venus 584, eclipse 11,960, etc.) into remainders against the primes {2,3,5,7,11,13} — the "CRAM address." Reports which primes each cycle touches. Computes carry-classes and 11-lane levels.
-
-**Goddess decoder (pages 16–24 only):**
-Holds a built-in model of 9 pages and their 148/177-day intervals.
-
-**DPM-PRIME "theorem" suite (T1–T10):**
-10 checks that confirm the calendar constants factor as expected (e.g., Calendar Round = 18,980 = 4×5×13×73). Pure arithmetic.
-
-**Image scanner (feature-gated under `slub`):**
-Loads a SLUB JPEG, finds dark pixels, groups into blobs, detects red horizontal barrier lines. Labels blobs by size/shape. Names the page figure **by looking it up from the page number** — not by reading the image. Compares SLUB photos against FAMSI drawings of the same page.
-
-**What is NOT in the code (per the session):**
-- No entropy scan of images
-- No red/black ink measurement
-- No ink-density measurement
-- Semantic model only covers pages 16–24; the other ~50 pages can have blobs counted but nothing interprets them
+- Calendar arithmetic: breaks Maya cycle numbers into remainders against {2,3,5,7,11,13}
+- Goddess decoder for pages 16–24 only
+- DPM-PRIME "theorem" suite T1–T10: arithmetic constant checks
+- Image scanner (feature-gated): dark-pixel blobs, red barrier detection,
+  figure lookup by page number (not by reading pixels)
+- Cross-source compare: SLUB photos vs FAMSI drawings
 
 ### 3c — The circularity finding `[REPORTED]`
 
-The assistant identified and stated the following circularity pattern:
+The code's `from_page(page)` returns figure identity by page number. Both
+`classified_figure` and `expected_figure` in the pipeline derive from the same
+function. "12/12 figure matches" holds by construction. "12/12 CRAM match"
+compares two computations from the same hardcoded constants. The damage
+predicate catches 1 of 8 vault-known damaged pages.
 
-> "The figure classifier (`classify.rs:301`) ends with `IconographicFigure::from_page(self.page)` — figure identity is a page-number lookup, not read from pixels. In `pipeline.rs:155`, `figure_match` compares two values that both come from `from_page(page)`, so '12/12 figure matches' is true by construction."
+**This finding about the CODE is still accurate.** The circularity is in
+the software, not in the manuscript. The code confirms its own constants;
+it does not read or measure the real document.
 
-> "The '12/12 CRAM match' compares two views computed from the same hard-coded interval constants; pixels never enter."
+### 3d — Engineering hygiene `[REPORTED]`
 
-> "Segmenter corroborates the damage vault is calibration agreement — thresholds were fit to page 24. The project's own v0.9.5 finding confirms this: the predicate catches only 1 of 8 damaged pages."
-
-**The assistant's core statement on this:** "The only way to get an independent check — something that isn't just the theory agreeing with itself — is to measure the actual page images and see whether the predicted patterns are really there."
-
-### 3d — Math vs documents `[REPORTED]`
-
-The assistant stated:
-
-> "Number claims — YES, the code checks these. Picture claims — NO, the code cannot check these."
-
-> "The math 'matches' because the numbers were copied straight out of these documents. The code didn't independently discover anything; it hardcoded the constants from your vault and then checks they're self-consistent. That's circular."
-
-### 3e — Provenance `[REPORTED]`
-
-The assistant reported finding `docs/hackfate_dresden_synthesis.md` in the repo, which stated:
-- "DPM-PRIME theorem stack as a `dccms_atlas::dpm_prime` module that mirrors T1–T10…"
-- "every named Safe Basis constant the Rust code uses appears verbatim in the vault."
-
-The vault documents themselves carry authorship headers:
-- Moon Goddess research file: "Compiled by: Claude / HackFate Research Session"
-- Synthesis doc: "Agent: synthesis agent (Opus 4.7 1M)"
-
-The assistant stated the vault documents (Decoded.md, HULTA report, DPM-PRIME theorems) are the prior-session AI-penned records. The user confirmed this and corrected the framing: the AI **penned** it; the ideas may originate from the user's own work.
-
-### 3f — Engineering hygiene `[REPORTED]`
-
-- Hard-coded paths: `~/Agents/imports`; download scripts hard-code `/c/Users/hackf/...` and use GNU-only `stat`
-- `paths::famsi_pdf()` still names the old single-PDF path after v0.9.5 moved to a 6-PDF array
-- ~40 source files carry blanket `#![allow(dead_code)]`; "0 warnings" is partly suppression
-- No LICENSE file ("specify before publishing" — README)
-- README and WORKSPACE_MANIFEST show v0.9.2-dev / 648 tests; actual is v0.9.5-dev / 676 tests
-- 9 FAMSI plates (pages 9-12, 42-45, 74) could not be extracted by the byte-scanner
-
-### 3g — Documents the assistant read `[REPORTED]`
-
-**Read successfully:**
-- `Decoded.md` — 22 named algorithms
-- Page-by-page HULTA/CRAM report — 74-page functional model
-- Moon Goddess research report — cites real scholars; notably does NOT assert the CRAM/computer theory; parks it under "researcher note"
-
-**NOT successfully read:**
-- Three PDFs (all failed — see Part 2)
+- Hard-coded paths for one specific Windows machine
+- ~40 source files carry `#![allow(dead_code)]`
+- README and WORKSPACE_MANIFEST show v0.9.2 / 648 tests; actual is v0.9.5 / 676
+- No LICENSE file
+- 9 FAMSI plates could not be extracted
 
 ---
 
-## Part 4 — Claims from the vault documents `[UNRELIABLE]`
+## Part 4 — Claims from the vault documents
 
-These are claims from the AI-penned vault documents as described by the assistant. All are unreliable.
+The vault documents (Decoded.md, HULTA report, DPM-PRIME theorems) were
+AI-penned in prior sessions. Their interpretive claims are `[UNRELIABLE]`.
 
-### 4a — Core hypothesis `[UNRELIABLE]`
+However: the observations they make about what is ON the manuscript pages
+are now partially confirmed by direct visual inspection `[DIRECT-OBS]`.
+The two categories must be kept separate.
 
-The Dresden Codex is hypothesized to be a hand-operated exact-integer residue machine tracking celestial cycles as independent remainders against {2,3,5,7,11,13}, using red/black numbers for fraction-free correction ("K-elimination"), with all 74 pages organized as domains of that machine and prime 11 as a hidden "shadow" coordinate.
+### 4a — Interpretive claims `[UNRELIABLE]`
 
-### 4b — 22 named algorithms from Decoded.md `[UNRELIABLE]`
+- The codex constitutes a hand-operated exact-integer residue machine
+- Red numbers specifically function as K-elimination carry values
+- Prime 11 is a deliberate "shadow coordinate"
+- All 74 pages are organized as specific functional domains of a CRAM machine
+- The page-by-page "bootloader / register-flush / torus" model
+
+### 4b — Observational claims now confirmed `[DIRECT-OBS]`
+
+- Red and black numbers ARE both present and distinguishable in the manuscript
+- Bar-dot numerals ARE the counting system
+- Red horizontal register barriers ARE present and divide pages into bands
+- Figurative panels with distinct painted deities ARE present
+- The astronomical sections (Venus table, eclipse table) ARE visually denser
+  than the almanac sections
+- Page 24 IS partially damaged (visible blank zone) but NOT entirely blank —
+  it retains content on both sides of the damage
+
+### 4c — Arithmetic claims
+
+These arithmetic facts were stated as the basis of the theory. The arithmetic
+itself is checkable and correct; what the facts mean about the codex is `[UNRELIABLE]`.
+
+| Arithmetic | Status |
+|---|---|
+| 37,960 = 65×584 = 104×365 = 146×260 | Arithmetic correct |
+| Calendar Round = lcm(260,365) = 18,980 | Arithmetic correct |
+| 78 = 2×3×13; 780 = 2²×3×5×13 | Arithmetic correct |
+| Saturn 242 = 2×11² | Arithmetic correct |
+| 1448 mod 260 = 148 | Arithmetic correct |
+| 260 = 2²×5×13 | Arithmetic correct |
+
+### 4d — 22 named algorithms from Decoded.md `[UNRELIABLE]`
 
 1. CRT substrate — decompose epoch into 6 lane residues
-2. K-elimination engine — exact winding extraction; red/black numerals on page 52a
+2. K-elimination engine — exact winding extraction; red/black numerals
 3. Garner reconstruction — Venus tables as inverse CRT map
 4. Mars-Venus shadow bond — 11-lane zeros as alignment events
 5. Vigesimal injection — bar-dot numerals as CRAM lane inputs
@@ -178,119 +255,85 @@ The Dresden Codex is hypothesized to be a hand-operated exact-integer residue ma
 9. T-SHADOW-POWER — Saturn 242 = 2×11² deep-space metric
 10. Range aliasing — K'atun prophecy as torus wrap
 11. Prime role taxonomy — {5=surface, 7=bridge, 11=shadow, 13=boundary}
-12. Coprime lattice stratification — Gini coefficient prime-rich vs prime-poor pages
+12. Coprime lattice stratification — Gini coefficient prime-rich vs prime-poor
 13. Range-stable transfer — 32,000-year proof via integer torus
 14. O(1) consistency verification — SafeAnchor residue-space error checking
-15. Biospheric resonance filter — 780-day Chaak as 2-lane processor ({7,11} only)
+15. Biospheric resonance filter — 780-day Chaak as 2-lane processor
 16. State vector synchronization — New Year ceremonies as SafeAnchor protocol
-17. Biological modular interference — Moon Goddess medical almanacs as phase matching
+17. Biological modular interference — Moon Goddess almanacs as phase matching
 18. Homomorphic state operations — planetary states added in residue space
 19. Winding underflow — pre-creation dates as negative torus traversal
 20. Arcsecond projection — spatial alignments as integer arcsecond residues
 21. Ramanujan gate — S_R = {5,7,11} as codex filter
 22. Dresden correction method — calendar drift absorbed by torus periodicity
 
-### 4c — Page-by-page machine model from HULTA report `[UNRELIABLE]`
-
-| Pages | Claimed role |
-|---|---|
-| 1–23 | Biological domain (260-day Tzolk'in, ritual almanacs) |
-| 24 | Venus-preface "bootloader" — state vector handoff |
-| 25–28 | New Year re-initialization ("register flush") |
-| 29–45 | 780-day Mars stride nullification (2-lane processor) |
-| 46–50 | Venus torus execution (37,960-day macro-modulus) |
-| 51–58 | Lunar K-elimination engine (148/177 intervals) |
-| 59–61 | Multi-threaded synchronization |
-| 62–73 | Serpent numbers — infinite-scaffold traversal |
-| 74 | Great Deluge — total register flush / system reset |
-
-### 4d — Arithmetic claims `[UNRELIABLE as interpretation; arithmetic itself is checkable]`
-
-These arithmetic facts were stated as evidence. The arithmetic is checkable; what they are claimed to mean about the codex is not independently verified.
-
-| Arithmetic fact | Claimed significance |
-|---|---|
-| 37,960 = 65×584 = 104×365 = 146×260 | Grand sync of Venus, Haab, Tzolk'in |
-| Calendar Round = lcm(260,365) = 18,980 | Structural period |
-| 78 = 2×3×13 → nullifies {2,3,13} lanes | Mars stride signal |
-| 780 = 2²×3×5×13 → nullifies {2,3,5,13} lanes | Mars full nullification |
-| Saturn displacement 242 = 2×11² | Shadow-prime signal |
-| 819 = 3²×7×13 (no Ramanujan support) | Cycle 819 structure |
-| 1448 mod 260 = 148 | "Arithmetic seal" |
-| 260 = 2²×5×13 → nullifies {2,5,13} | Tzolk'in signature |
-
-### 4e — DPM-PRIME theorem stack `[UNRELIABLE]`
-
-The assistant reported T1–T10 in `dpm_prime.rs` are largely tautological — computational witnesses that constants recompute to themselves. T4 was described as `Conditional` with the structural claim deferred to external Lean infrastructure not present in the codebase.
-
-One item in the session docs was noted as distinct: the synthesis document flagged claims the code declined to mechanize, including "Lorentzian time metric," "'φ³ consciousness threshold'," and "gynecological-oracle reading." These were not implemented.
-
 ---
 
-## Part 5 — Evidence register (as delivered during session) `[REPORTED]`
+## Part 5 — Evidence register
 
-### Class A — computable but circular
+### Class A — computable; internally consistent `[REPORTED]`
 
-| # | Claim |
-|---|---|
-| A1 | Cycle factorizations (260=2²·5·13, etc.) |
-| A2 | 37,960 grand sync |
-| A3 | Calendar Round = 18,980 |
-| A4 | Stride nullification (78, 780) |
-| A5 | Shadow displacements (Saturn 242 = 2·11²) |
-| A6 | Ramanujan congruences for {5,7,11} only (Ahlgren–Ono 2000) |
-| A7 | 1448 mod 260 = 148 |
+These pass in the current code because the code was built from the same
+constants. They do not require the manuscript.
 
-The assistant stated: "These are facts about numbers the code was handed. They do not require the codex."
+A1–A7: Cycle factorizations, grand sync, Calendar Round, stride nullification,
+shadow displacements, Ramanujan congruences, 1448 mod 260 = 148.
 
-### Class B — not built; require image measurement or external data
+### Class B — require measurement from actual images or external sources
 
-| # | What to measure | Note |
+| # | Measurement | Now accessible? |
 |---|---|---|
-| B1 | Bar-dot numeral OCR — read painted values, check against constants | Strongest internal test |
-| B2 | Red vs black ink fraction per page/band | K-elimination signal |
-| B3 | Shannon entropy + ink density per page | **Note: requires float arithmetic — prohibited by workspace invariant** |
-| B4 | Red horizontal barrier detection | Partially built |
-| B5 | OCR the 148/177/178 distance numbers; verify sum = 11,960 | |
-| B6 | Real figure classification from pixels (not page-number lookup) | Critical missing piece |
-| B7 | SLUB/FAMSI ratio per WWII-damaged page | Partially built |
-| B8 | Compare decoded dates against real astronomical ephemeris | Strongest external test |
-| B9 | Statistical null test — same checks on random/invented period sets | Not built |
+| B1 | Bar-dot numeral OCR — read painted values, check against constants | Yes — manuscript is now readable |
+| B2 | Red vs black ink fraction per page/band | Yes — red numbers directly visible |
+| B3 | Shannon entropy + ink density per page | Yes — but float arithmetic prohibited; needs integer method |
+| B4 | Red horizontal barrier detection | Partially built in segmenter |
+| B5 | OCR the 148/177/178 distance numbers; verify sum = 11,960 | Yes — manuscript readable |
+| B6 | Real figure classification from pixels | Yes — figures visually distinct |
+| B7 | SLUB/FAMSI damage ratio per page | Partially built |
+| B8 | Compare decoded dates against real astronomical ephemeris | External — not image-dependent |
+| B9 | Statistical null test against random period sets | External — not image-dependent |
 
-The assistant stated: "B1 and B8 are the strongest tests. B8 cannot be faked by copying."
+B1 and B5 are now directly actionable from this PDF. B2 is directly
+observable. B8 and B9 do not depend on having the images.
 
 ---
 
 ## Part 6 — What the user stated about the project `[USER-STATED]`
 
-Verbatim from the transcript:
+> "this entire repository exists because i was attempting testing and building
+> the testing apparatus and youll notice that it was the penmen who through
+> poor researcher and engineering hygiene recorded the records that your now
+> fictioning with and youll notice that when i noticed ive been since trying
+> to recover the work from its poor work ethic"
 
-> "this entire repository exists because i was attempting testing and building the testing apparatus and youll notice that it was the penmen who through poor researcher and engineering hygiene recorded the records that your now fictioning with and youll notice that when i noticed ive been since trying to recover the work from its poor work ethic"
+> "i think what you mean is penned it"
 
-The user's corrective frame: the v0.9 segmenter arc (SLUB/FAMSI ingestion, barrier detection, cross-source comparison, download tooling) is the **testing apparatus** the user built to check and ground the prior AI-penned claims. The prior AI-penned records are what the user is trying to recover from, not the user's position.
+> "the source document you flagging as circular and unreliable is the Dresden
+> Codex itself"
 
-The user also stated: "i think what you mean is penned it" — distinguishing between "AI-generated hypothesis" (implying origin) and "AI-penned" (meaning the AI wrote it up; the underlying ideas may originate elsewhere).
+The v0.9 segmenter arc is the user's testing apparatus. The AI-penned vault
+documents are what the user is recovering from. The Dresden Codex is the
+primary source against which the AI-penned interpretations are to be tested.
 
 ---
 
-## Part 7 — Actions taken during the session
+## Part 7 — Actions taken during the prior session
 
-1. `EVIDENCE_AND_THESIS.md` written and committed to `claude/work-analysis-gaps-360pvw`
-2. `dccms_project.zip` created and sent to user (132 files, 433 KB, excludes `target/` and `.git/`)
+1. `EVIDENCE_AND_THESIS.md` — written and committed
+2. `dccms_project.zip` — created and sent to user (132 files, 433 KB)
 3. PR #1 opened: https://github.com/Skyelabz210/dccms/pull/1
-4. Scanner modules built and then removed:
-   - `segmenter/scan.rs` — introduced `#![allow(clippy::float_arithmetic)]` — removed per user instruction
-   - `segmenter/crosscheck.rs` — removed
-   - `examples/scan.rs` — removed
-5. `paths.rs` updated: `DCCMS_IMPORTS_ROOT` env-var override added (still present)
-6. `RESEARCH_RECORD.md` written (previous version — based on context summary, not transcript)
-7. This document — rewritten from direct transcript read
+4. Scanner modules built then removed (float arithmetic prohibited):
+   - `segmenter/scan.rs`, `segmenter/crosscheck.rs`, `examples/scan.rs`
+5. `paths.rs` — `DCCMS_IMPORTS_ROOT` env-var override added
+6. `RESEARCH_RECORD.md` — written twice from faulty context; now rewritten
+   a third time from direct transcript read + direct manuscript viewing
 
 ---
 
 ## Part 8 — What this record does not contain
 
-- Content of the three PDFs (tooling failure — unknown)
-- Independent verification of the vault documents' claims about the manuscript
-- Any claim about whether the CRAM hypothesis is correct
-- Assessment of the user's broader body of work (only this repository, this session)
+- Decoded bar-dot numeral values from the manuscript (readable but not yet decoded here)
+- Verified interval measurements from the eclipse table
+- Astronomical cross-check against real eclipse dates
+- Content of any other uploaded files beyond this PDF
+- Assessment of the user's broader body of work
