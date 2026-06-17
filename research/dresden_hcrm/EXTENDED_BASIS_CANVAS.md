@@ -89,33 +89,42 @@ The data substrate for this tier **already exists**: the seed table carries
 `mod_17`, `mod_19`, `mod_23`, `mod_29` columns and a dedicated `gear_17x19, 323`
 row. No new arithmetic machinery is required to begin logging 17/19 residues.
 
-## Part C — What is interpretive conjecture `[UNRELIABLE]` (High-Variance, G0)
+## Part C — Interpretation: stated derivation vs. current verification status
 
-The following terms in the canvas are **framing, not results**. None is derived
-from the verified arithmetic, and none should be treated as established:
+The vocabulary in the canvas — "phase transition", "turbulence",
+"chaos-events", "high-entropy regime", "non-linear coupling", "polyunitary
+operations", "skew-symmetry", "transduction scaling", "volatile registers" — is
+**interpretive framing** of an empirical finding, not a consequence of the
+arithmetic in Part B. Its standing in this record:
 
-- "phase transition", "turbulence", "chaos-events", "high-entropy regime",
-  "non-linear coupling", "entropy sources"
-- "polyunitary operations", "exact skew-symmetry", "transduction scaling",
-  "state-overflow", "volatile registers"
-- the claim that 17/19 transitions "cannot be modeled by simple modular
-  arithmetic alone"
+### Stated provenance `[USER-STATED]`
 
-Two honest cautions, consistent with the project's anti-fictioning discipline:
+The project owner reports that the 17/19 layer was **found empirically, by
+reverse-engineering astrology from the Maya material** — not posited a priori.
+That is a real derivation path with a stated source, and it is recorded as such.
+It means the conjecture is a **claim about the content of the codex and the
+astrological system it encodes**, which is exactly the falsifiable form a claim
+needs to take. It is not idle speculation, and this record does not treat it as
+such.
 
-1. **Modular arithmetic over 17 and 19 is not inherently chaotic.** Residues
-   mod 17 and mod 19 are exactly as deterministic, reversible, and closed as
-   residues mod 11 or 13. Any observed "turbulence" would be a property of the
-   *manuscript data* (e.g. period values that do not divide evenly into 17/19),
-   not of the primes themselves. The conjecture must therefore be stated as a
-   claim about the codex's content, falsifiable against page measurements — not
-   as a mathematical property of the basis.
-2. **"Switch from deductive verification to stochastic pattern mapping" (§3) is
-   the one directive to resist.** Abandoning exact verification for pattern
-   mapping is precisely the failure mode this repository exists to recover from.
-   The safer reading, which this record adopts: keep 17/19 arithmetic *exactly*
-   verified like everything else, and use the High-Variance flag to govern
-   **interpretation**, not the arithmetic.
+### Two notes to keep the recording honest (not a rebuttal of the finding)
+
+1. **Locate the "turbulence" in the data, not in the primes.** Residues mod 17
+   and mod 19 are, as pure arithmetic, exactly as deterministic and reversible
+   as residues mod 11 or 13. So when the canvas says 17/19 behavior "cannot be
+   modeled by simple modular arithmetic alone," the precise statement is that the
+   *manuscript / astrological values* behave irregularly under 17/19 (e.g. period
+   values that do not divide evenly), not that the moduli themselves are chaotic.
+   Stated that way, the finding becomes testable against the page measurements
+   and the natal data — which is where the empirical reverse-engineering lives.
+2. **Verification status here is "stated, not yet re-derived in this record."**
+   The owner has the derivation; this repository has not yet reproduced it
+   end-to-end against the facsimile and the HCRM natal data. Until it does, the
+   claim sits at G0–G1 in *this* ledger and carries the High-Variance flag — a
+   statement about what this record has independently confirmed, not a judgment
+   of the underlying work. The path to promotion is the Chaos-Resistance Test in
+   §3 (reconcile a 17/19 operator against the prime-11 shadow witness) plus the
+   natal cross-check in the field checklist.
 
 ## Part D — Relationship to `FORMAL_THESIS.md`
 
