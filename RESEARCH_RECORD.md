@@ -337,3 +337,19 @@ primary source against which the AI-penned interpretations are to be tested.
 - Astronomical cross-check against real eclipse dates
 - Content of any other uploaded files beyond this PDF
 - Assessment of the user's broader body of work
+
+---
+
+## Part 9 — Formal thesis recorded
+
+The user's comprehensive formal thesis statement has been transcribed and committed
+as `FORMAL_THESIS.md` in the repository root.
+
+It covers: forward generator G(n_reg,base,n_inter,inter), winding recovery formula
+w(l,p)=2·(p−l−1) mod 13, substrate role map {5,7,11,13,23,37,59,73}, Venus
+11-lane page-boundary orbit, complete evidence register (sections A–H), hypotheses
+H-VENUS-11 through H-SHADOW-ENTROPY, and the final canonical statement.
+
+Arithmetic status: 290 checks verified with pure Python (no floats). All pass.
+Interpretive claims remain hypotheses tagged `[UNRELIABLE]` pending manuscript
+measurement.
