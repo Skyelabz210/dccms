@@ -237,7 +237,7 @@ producer composition.
 The numbers 365, 584, 73, 37,960, and the next-star output are linked by chosen
 factorizations. They cannot be counted as statistically independent hits.
 
-**Unlocks:** a dependency graph can separate:
+**Unlocks:** an evidence-ancestry map can separate:
 
 - independent manuscript observations;
 - independent astronomical measurements;
@@ -246,6 +246,9 @@ factorizations. They cannot be counted as statistically independent hits.
 
 That will make any remaining convergence substantially stronger because it
 will identify which coincidences survive dependency correction.
+
+This map is statistical bookkeeping, not an arithmetic dependency wrapper and
+not a prerequisite for Shadow/GCD resolution.
 
 ## 15. The most valuable negative control is 11,959 versus 11,960
 
@@ -274,3 +277,24 @@ algorithmic comparator and the new composition/invariant stated explicitly.
 **Required discipline:** do not call a familiar identity new; do not let that
 identity erase a new theorem formulation, protocol, or architecture without
 comparison at the same level.
+
+## 17. Shared factors are resolution data, not a dead end
+
+For division by `d` on a lane `m`, put `g=gcd(d,m)`. After subtracting the
+authenticated remainder, reduction by `g` exposes the quotient modulo `m/g`.
+The missing `g`-fold class is exactly what the Shadow/auxiliary frame resolves.
+Thus GCD does not block the operation; it quantifies how much auxiliary
+resolution is required.
+
+The session also implemented GCD itself as an encrypted target query in NINE65:
+a bounded direct truth-table circuit for widths 1–4 and fixed-round encrypted
+Euclid for widths 5–8, with typed noise/width refusals. This is a downstream
+example of the universal principle: compile the consumer's requested answer
+instead of reconstructing every intermediate scalar state.
+
+**Unlocks:** treat nonunit reciprocal failure as a dispatcher signal to the
+Shadow/FPD/word-circuit route, not as a claim that arbitrary-modulus division or
+GCD is unavailable.
+
+**Integration task:** bind the existing route and certificate to each DCCMS and
+NINE65 profile; do not reopen the solved arithmetic question.

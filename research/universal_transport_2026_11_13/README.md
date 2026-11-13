@@ -34,6 +34,14 @@ This is more general than one CRT reconstruction recipe. It tells us:
 5. which historical or physical claims require evidence not present in the
    arithmetic theorem.
 
+Shared factors are not a terminal obstruction in this architecture. They tell
+us the resolution of the partial quotient view: on a lane `m`, division by
+`d` leaves a view modulo `m/gcd(d,m)`. The Shadow/auxiliary frame supplies the
+missing class, and the certified FPD/division dispatcher either returns the
+exact quotient, a bounded result, or a typed refusal. Separately, this session
+implemented an encrypted GCD consumer in NINE65. See
+`evidence/SHADOW_GCD_RESOLUTION.md` for the source-bound correction.
+
 ## Strongest constructive results retained here
 
 | Result | Status | Exact scope |
@@ -150,6 +158,8 @@ specific producers, frames, epochs, operator traces, and differential tests.
   table.
 - `evidence/WORKSPACE_TEST.md` — fresh Rust workspace test environment and
   per-crate counts.
+- `evidence/SHADOW_GCD_RESOLUTION.md` — correction recording the existing
+  Shadow/FPD ambiguity resolution and encrypted GCD implementation.
 
 ## Reproduce
 

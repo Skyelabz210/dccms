@@ -17,6 +17,7 @@ behavior, and proposed interpretation.
 | Full calendar phase readings combine by generalized CRT | `[PROVED-STANDARD]` | Their joint resolution is an LCM, with GCD compatibility checks |
 | The named periods are pairwise coprime lanes | `[REFUTED]` | They overlap at 4, 5, 13, 73 and must be treated as a compatible lattice |
 | `260/365/584` leaves 23 phases modulo 11,960 | `[PROVED] [EXECUTED]` | An authentic mod-23 reading is sufficient from this particular source frame |
+| A raw mod-23 lane is the only possible resolver of those 23 classes | `[REFUTED]` | Any authenticated observation injective on the 23 classes suffices; the direct constructor uses mod 23, while a lifted Shadow frame may carry the class through a different encoding |
 | Factor 23 alone supplies the reading | `[REFUTED]` | A factor is not an observation producer |
 | The surviving eclipse table is exactly a modulus of 11,960 | `[HISTORICALLY-SENSITIVE]` | Recent scholarship distinguishes a 11,959-day surviving table from the common 11,960 model |
 | The 11,960 constructor predicts eclipses | `[NOT-ESTABLISHED]` | It predicts a modeled modular phase only; an astronomical event query needs a physical model |
@@ -26,6 +27,9 @@ behavior, and proposed interpretation.
 | Phase plus net winding determines elapsed physical duration without calibration | `[REFUTED-IN-GENERAL]` | Rate, pauses, and admitted histories matter |
 | Winding-sensitive transport occurs in an unrelated physical domain | `[EXTERNAL-EVIDENCE]` | Thouless pumps supply an application, while conventional theory predicts it too |
 | Physical time emerges from winding | `[OPEN-PHYSICAL-HYPOTHESIS]` | Needs explicit dynamics and a measurement that differs from conventional predictions |
+| A shared factor makes exact division impossible | `[REFUTED]` | The lane yields `q mod (m/g)` for `g=gcd(d,m)`; Shadow/auxiliary coordinates and a bound restore the missing class, or the certified dispatcher refuses |
+| GCD remained an unsolved runtime blocker after this session | `[REFUTED]` | NINE65 implemented bounded encrypted GCD with direct-target and fixed-round Euclid strategies and recorded native ciphertext evidence |
+| Shadow Prime is merely another coprime CRT lane | `[REFUTED-AS-STATED]` | It is a typed integrity/disambiguation coordinate; when 11 is already in the payload, an independent phase-locked anchor or lifted Shadow family supplies the required invertible coordinate |
 | DCCMS currently performs observation-only K-Elimination end to end | `[NOT-YET]` | Current division accepts scalars and emits `a/b`; see implementation audit |
 | DCCMS visual H4 has been independently discharged by image content | `[REFUTED-BY-CURRENT-PATH]` | Current classification remains page-conditioned; a held-out pixel-derived classifier is required |
 | The universal theorem proves the Codex implemented the mechanism | `[NOT-IMPLIED]` | Requires a source-bound sign/operator correspondence and held-out prediction |

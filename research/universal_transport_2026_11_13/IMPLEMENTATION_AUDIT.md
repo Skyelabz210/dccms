@@ -49,6 +49,12 @@ Independent probes also reproduced two boundaries:
 - casting a lane product larger than `u64` truncates the product used by
   `from_integer`.
 
+These are boundaries of this DCCMS recombinant implementation, not evidence
+that CRAM lacks a shared-factor solution. NINE65 separately implements
+Shadow/auxiliary disambiguation, certified FPD/DivExact routes, encrypted word
+division, and bounded encrypted GCD. DCCMS should route or import those contracts
+rather than treating a failed local inverse as a global GCD obstruction.
+
 **Action:** distinguish boundary reconstruction from residue-compute APIs;
 validate pairwise-coprime/LCM semantics and checked widths before construction.
 

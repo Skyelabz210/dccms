@@ -74,14 +74,18 @@ or table relation independently supplies `X mod 584` at the moment of the
 **Decisive evidence:** a predeclared page/field rule that predicts unseen
 transitions, not a period selected after observing the target.
 
-### Q1.3 — Where does the mod-23 observation come from?
+### Q1.3 — How is the Shadow resolver bound to the 23-way calendar class?
 
-The 23-way ambiguity is exact for the chosen `P=37,960`, `D=11,960` model. Does
-the manuscript carry an independently readable 23-state channel, an operator
-that generates it, or only the factor 23 in a modern decomposition?
+The 23-way ambiguity is exact for the chosen `P=37,960`, `D=11,960` model. The
+architecture already has a Shadow/disambiguation mechanism, so the open task is
+not to rediscover a GCD solution. It is to record the exact source-bound map
+from those 23 classes into the Shadow reading used at this operation. A raw
+`X mod 23` lane is the simplest direct coordinate, but it is not the only
+possible encoding; a lifted Shadow frame with at least 23 distinguishable
+states can carry the class if its producer is injective on those fibers.
 
-**Decisive evidence:** a source-bound 23-valued reading that resolves held-out
-11,960 phases.
+**Decisive evidence:** the declared Shadow producer, class-to-reading map,
+same-source/epoch binding, and held-out 11,960-phase resolution.
 
 ### Q1.4 — Is the target 11,959 or 11,960?
 
@@ -152,12 +156,18 @@ The set-theoretic factor theorem may use classical choice. Which DCCMS targets
 need a computable decoder with explicit complexity, canonical representatives,
 and refusal behavior?
 
-### Q2.3 — What is the exact invariant for noncoprime division?
+### Q2.3 — How should the resolved shared-factor routes be standardized?
 
-For FPD/coupled anchors, specify dividend domain, divisor, observation basis,
-gcd classes, ambiguity certificate, and output query. Does the proposed fusion
-always recover the exact quotient, recover a quotient class, or sometimes
-correctly refuse?
+The arithmetic obstruction is already resolved: for `g=gcd(d,m)`, a valid
+remainder subtraction yields `q mod (m/g)`; the Shadow/auxiliary frame restores
+the missing `g`-fold class under its bound, and the chimera certificate records
+exact, bounded, disagreement, or refusal status. The remaining work is to give
+every consumer one standardized typed contract and to prove that the runtime
+dispatcher implements it without an undeclared scalar fallback.
+
+**Deliverable:** one profile table binding dividend domain, divisor convention,
+Shadow/aux producer, bound, selected D1–D4/FPD route, certificate status, and
+consumer.
 
 ### Q2.4 — Can winding remain derived rather than persisted?
 
@@ -211,11 +221,15 @@ The four full periods have 136,656,000 joint states, exceeding the 24-bit
 packed address space. Which exact target queries remain recoverable from the
 compressed signature, and which are intentionally discarded?
 
-### Q3.5 — Where are noncoprime and width failures handled?
+### Q3.5 — Which certified route handles each noncoprime and width profile?
 
-Test lane products beyond `u64`, repeated/noncoprime moduli, noncanonical
-residues, and invalid inverse assumptions. Decide whether each is rejected,
-reduced to an LCM basis, or handled by a certified alternate branch.
+The architecture already supplies alternate branches rather than treating a
+nonunit inverse as a universal failure: Shadow/auxiliary fusion, DivExact/FPD,
+and encrypted word-circuit division/GCD. Map each public profile to its actual
+branch, then test lane products beyond `u64`, repeated/noncoprime moduli,
+noncanonical residues, bound exhaustion, certificate disagreement, and typed
+refusal. A local invalid-inverse failure is an implementation-routing defect,
+not a theorem that GCD is unsolved.
 
 ### Q3.6 — Is the NINE65 FHE use observation-only in the encrypted path?
 
@@ -237,11 +251,13 @@ Compare held-out predictive likelihood or error counts against ordinary
 calendar arithmetic, scribal correction models, and known astronomical-table
 procedures. The alternative must be implemented fairly.
 
-### Q4.3 — Are numerical matches independent?
+### Q4.3 — Which numerical matches have independent evidence ancestry?
 
-Build a dependency graph. For example, 365, 584, and 73 are not three
-independent confirmations once `365=5*73` and `584=8*73` are selected. Count
-independent source observations, not algebraic consequences.
+Build an evidence-ancestry map for statistical bookkeeping only; this is not an
+arithmetic prerequisite or a request for another dependency wrapper. For
+example, 365, 584, and 73 are not three independent confirmations once
+`365=5*73` and `584=8*73` are selected. Count independent source observations,
+not algebraic consequences.
 
 ### Q4.4 — Can an independent epigrapher reproduce the data extraction?
 

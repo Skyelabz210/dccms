@@ -41,6 +41,7 @@ research/
     SOURCE_MANIFEST.md                         # immutable source pins and exclusions
     experiments/verify_transport.py            # exhaustive finite constructors
     evidence/verification.json                 # generated verification record
+    evidence/SHADOW_GCD_RESOLUTION.md           # resolved shared-factor/GCD correction
   dresden_hcrm/
     00_project_control/
       SESSION_INTEGRATION_REPORT_20260616.md   # session launch packet [USER-PROVIDED]

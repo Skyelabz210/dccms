@@ -14,6 +14,7 @@ Those items are represented by immutable pins, hashes, and scoped descriptions.
 | `Skyelabz210/astrology_remastered` | `ad0c8380f02b1d0c4f05a3e00726be3bc9680058` | Star family, adjacent recovery, successor and winding primitives |
 | `Skyelabz210/k-elimination-lean4` working proof tree | `dd9c6cfb341ad3747f148c336a015e2b80664e87` | Universal theorem campaign and least-anchor proofs |
 | `Skyelabz210/NINE65_v7` cross-pollination workspace | `25bb6a7c464d97a439544d1d1e2d32f0baf3f6cb` | Original session packets and verification ledgers |
+| NINE65 encrypted-GCD implementation branch | `bef7e2d90fb36653104170851459ec4335454701` | Bounded encrypted GCD strategies; integrated into the session lineage at `3ff079e` |
 
 The DCCMS baseline was clean and equal to `origin/main` before this branch was
 created.
@@ -51,6 +52,7 @@ repository at the commit above:
 - `research/star-successor-clarification-2026-11-13/`
 - `research/star-sequence-identification-2026-11-13/`
 - `research/calendar-claim-audit-2026-11-13/`
+- `research/swarm-campaign-2026-11-13/runtime-gcd/`
 
 This DCCMS directory is the canonical synthesis, question ledger, and compact
 reproducer. The original packets retain detailed logs, external-source ledgers,

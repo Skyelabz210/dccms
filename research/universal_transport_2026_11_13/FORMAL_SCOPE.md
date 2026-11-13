@@ -54,7 +54,8 @@ The formal results do not assert:
 - that 584 or 23 is independently observed in a manuscript operation;
 - that an ideal modular phase is a real eclipse occurrence;
 - that an RNS implementation is cryptographically secure;
-- that all division cases, especially noncoprime FPD, are complete;
+- that this proof pin alone refines every already-implemented Shadow/FPD/GCD
+  runtime route to machine code;
 - that the current DCCMS Rust path avoids scalar reconstruction; or
 - that a theorem or architecture has no prior art.
 
@@ -67,7 +68,8 @@ supplied and tested outside the abstract theorem.
 2. Prove the concrete 584 and 23 constructors and inverses in Lean.
 3. Formalize compatible cyclic frames and complement-lane synthesis.
 4. Extract an executable minimal-observation compiler with proof certificates.
-5. State and prove the exact noncoprime FPD success/refusal invariant.
+5. Connect the existing noncoprime FPD success/bounded/refusal certificate and
+   encrypted GCD implementations to machine-checked refinement theorems.
 6. Formalize source/frame/epoch authentication as types or indexed structures.
 7. Prove packed-signature sufficiency only for explicitly listed queries.
 8. Connect NINE65's actual encrypted execution path to the same interfaces and
