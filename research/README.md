@@ -31,6 +31,16 @@ integration report. **Strong claims require G4 or G5.**
 
 ```
 research/
+  universal_transport_2026_11_13/
+    README.md                                  # session synthesis and navigation [MIXED-EVIDENCE]
+    CLAIM_LEDGER.md                            # exact claim/evidence/status map
+    QUESTION_LEDGER.md                         # prioritized research questions
+    MISSED_CONNECTIONS.md                      # newly exposed structural links
+    IMPLEMENTATION_AUDIT.md                    # current-code boundary audit
+    FORMAL_SCOPE.md                            # proof inventory and non-implications
+    SOURCE_MANIFEST.md                         # immutable source pins and exclusions
+    experiments/verify_transport.py            # exhaustive finite constructors
+    evidence/verification.json                 # generated verification record
   dresden_hcrm/
     00_project_control/
       SESSION_INTEGRATION_REPORT_20260616.md   # session launch packet [USER-PROVIDED]
@@ -45,6 +55,12 @@ research/
     prototype/                                  # browser natal-chart prototype [UNRELIABLE]
     README.md
 ```
+
+`universal_transport_2026_11_13/` is the canonical public, repository-safe
+record of the 2026-11-13 cross-repository investigation. It distinguishes
+proved transport facts, executed finite checks, implementation observations,
+historical hypotheses, and physical hypotheses. Its source manifest pins but
+does not duplicate other repositories or private research bodies.
 
 ## Relationship to the rest of the repository
 

@@ -1,7 +1,7 @@
 # DCCMS — Dresden Codex Configuration Manifold Study
 
 **Version:** 0.9.2-dev — customize-fully calibration
-**Tests:** 648 passing, 0 failing (532 `dccms_atlas` + 94 `dresden_codex` + 22 `prime_hunt`)
+**Tests:** 669 passing, 0 failing (553 `dccms_atlas` + 94 `dresden_codex` + 22 `prime_hunt`)
 **Author:** Anthony Diaz (Acid) — [HackFate.us](https://hackfate.us) / [Skyelabz210](https://github.com/Skyelabz210)
 **Computational collaborator:** Claude (Anthropic)
 
@@ -17,6 +17,13 @@ by integer congruence.
 > evidence. See [`METHODOLOGY.md`](METHODOLOGY.md). The K-Elimination identity
 > the CRAM substrate relies on is machine-checked (27 Lean 4 theorems, 0 `sorry`,
 > 0 axioms; Coq cross-validated) under [`formal/`](formal/).
+
+> **Current research audit:** the 2026-11-13 cross-repository synthesis,
+> universal-transport results, implementation boundaries, open questions, and
+> reproducible finite constructors are indexed at
+> [`research/universal_transport_2026_11_13/`](research/universal_transport_2026_11_13/).
+> Its claim ledger distinguishes formal results, executed checks, historical
+> hypotheses, and physical hypotheses.
 
 The Goddess section is the *target*. The rest of the workspace is the
 apparatus required to read it without leaving exact arithmetic.
@@ -44,8 +51,10 @@ DCCMS computes:
 - The **mutual information** between candidate "head" hypotheses
   (Saturn-11², 4-fold temperaments, 12-fold zodiac, Venus phase, …)
   and the event sequence.
-- The **iconographic verification** of each Goddess page against the
-  vault-known sequence (MoonSign, RabbitSign, …, BlankBridge).
+- The **page-conditioned iconographic verification** of each Goddess page
+  against the vault-known sequence (MoonSign, RabbitSign, …, BlankBridge).
+  Independent pixel-derived classification remains an open gate; see the
+  current research audit linked above.
 - The **cross-source corroboration** of post-WWII SLUB photographs
   against the pre-1880 Förstemann / Schele FAMSI chromolithograph —
   damaged pages lose their red barriers, intact pages keep them.
@@ -75,7 +84,7 @@ A three-crate Rust workspace, layered:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  dccms_atlas (query layer — ~62 modules, 532 tests)         │
+│  dccms_atlas (query layer — ~62 modules, 553 tests)         │
 │  ┌──────────┬──────────┬──────────┬──────────┬──────────┐   │
 │  │ heads    │ atlas    │ events   │ h*_*     │ engines  │   │
 │  │ moon_    │ codex_   │ venus_   │ dpm_     │ segmenter│   │
@@ -125,7 +134,7 @@ denominators.
 | H3-b | 4-fold temperaments (28 d) | SUPPORTED (39%) |
 | H3-c | EclipseAlt (325 d) | SUPPORTED (32%) |
 | H3-ext | 73-family + intercalary family | SUPPORTED |
-| H4 | The Goddess section encodes configuration metadata | **SUPPORTED** (v0.7 visual transducer + v0.9 segmentation close it) |
+| H4 | The Goddess section encodes configuration metadata | ARITHMETIC PATH SUPPORTED; independent pixel-derived classification OPEN |
 | H5 | Prime 11 is the universal navigation coordinate | SUPPORTED (Level-2/3+ theorem) |
 | Binding | Venus Table and Eclipse Table share the Tzolk'in carry class | THEOREM (all 5 parts certified) |
 
@@ -152,7 +161,7 @@ Pure CRAM arithmetic, no codex semantics.
 | `ramanujan_partition.rs` | Discovery 1 (Ramanujan congruence content) + Discovery 3 (S_R = {5, 7, 11}) |
 | `prime_gap_analysis.rs` | Discovery 5 (prime-gap doubling near the Safe Basis) |
 
-### `dccms_atlas` — query layer (532 tests)
+### `dccms_atlas` — query layer (553 tests)
 
 The decoder proper. Organized by hypothesis and by feature area.
 
@@ -178,7 +187,7 @@ The decoder proper. Organized by hypothesis and by feature area.
 | `venus_kernel` | Venus kernel under K-Elim, lane-11 signature `[5, 2, 8, 8]`, fifth-operator rhythm |
 | `substrate_roles` | Per-prime role taxonomy (parity / fabric / content / traversal / coordinate / boundary) |
 
-#### Visual transducer (v0.7 — H4 closed)
+#### Visual transducer (v0.7 — arithmetic path; independent H4 visual gate open)
 
 `h4_visual/` (10 files): basis-parameterized `lift<const K>`, the `GlyphAlphabet<const K>` trait with implementors for `BarDotNumeral`, `DayNameGlyph` (20 Tzolk'in days), `MonthGlyph` (18 Haab months + Wayeb), `IconographicFigure` (9 Goddess pages), and a `PageLayout` whose cumulative CRAM addresses match `MoonGoddessProfile::page_cram_addresses` exactly. Five-Contract test gates (Object / Topology / Uniformity / Operator Consistency / Discharge).
 
@@ -362,7 +371,10 @@ cargo build --workspace --release
 # Build with SLUB / FAMSI image segmenter
 cargo build --workspace --release --features dccms_atlas/slub
 
-# Run the full test suite (532 + 94 + 22 = 648 tests)
+# Run the default workspace suite (553 + 94 + 22 = 669 tests)
+cargo test --workspace --locked
+
+# Run the optional image-feature suite
 cargo test --workspace --release --features dccms_atlas/slub
 ```
 

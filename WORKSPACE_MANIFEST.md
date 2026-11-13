@@ -2,7 +2,7 @@
 
 **Version:** 0.9.2-dev — customize-fully calibration
 **Date:** 2026-05-19
-**Tests:** 648 passing, 0 failing (532 `dccms_atlas` + 94 `dresden_codex` + 22 `prime_hunt`)
+**Tests:** 669 passing, 0 failing (553 `dccms_atlas` + 94 `dresden_codex` + 22 `prime_hunt`)
 **Architecture:** 3-crate Rust workspace, exact-integer (zero float, `#![deny(clippy::float_arithmetic)]` enforced in `dccms_atlas/src/lib.rs`)
 
 This document is the ground truth of what exists. Read it before creating any new module.
@@ -14,7 +14,7 @@ This document is the ground truth of what exists. Read it before creating any ne
 | Crate | Status | Tests | Purpose |
 |---|---|---|---|
 | `dresden_codex` | PRODUCTION | 94 | L1 substrate — CRAM primitives, Safe Basis, K-Elim divide, shadow_bond, S_R distribution |
-| `dccms_atlas` | PRODUCTION (v0.9.2-dev) | 532 | Query layer — Hydra, atlas, hypothesis instruments, decoders, segmenter |
+| `dccms_atlas` | PRODUCTION (v0.9.2-dev) | 553 | Query layer — Hydra, atlas, hypothesis instruments, decoders, segmenter |
 | `prime_hunt` | PRODUCTION | 22 | Prime sieves, Ramanujan partition, prime-gap analysis |
 
 ---
